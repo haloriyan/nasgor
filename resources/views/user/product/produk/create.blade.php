@@ -9,7 +9,7 @@
         <div class="flex flex-wrap items-center gap-4">
             <div class="border rounded-lg max-w-20 grow bg-slate-200 aspect-square relative flex flex-col gap-2 items-center justify-center bg-cover bg-center" id="imagePreviewEdit">
                 <ion-icon name="image-outline" class="text-xl text-slate-700"></ion-icon>
-                <input type="file" name="images[]" class="absolute top-0 left-0 right-0 bottom-0 opacity-0 cursor-pointer" onchange="onChangeImage(this, '#imagePreviewEdit')" required>
+                <input type="file" name="images[]" class="absolute top-0 left-0 right-0 bottom-0 opacity-0 cursor-pointer" onchange="onChangeImage(this, '#imagePreviewEdit')">
             </div>
         </div>
 

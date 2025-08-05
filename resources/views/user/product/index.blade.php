@@ -54,6 +54,7 @@
 
 @include('user.product.'.$tab.'.create')
 @include('user.product.'.$tab.'.delete')
+@include('user.product.addon.edit')
 
 @endsection
 
@@ -95,6 +96,23 @@
 
         select("#AddCategory #imagePreviewEdit").innerHTML = `<ion-icon name="image-outline" class="text-xl text-slate-700"></ion-icon>
         <input type="file" name="image" class="absolute top-0 left-0 right-0 bottom-0 opacity-0 cursor-pointer" onchange="onChangeImage(this, '#imagePreviewEdit')" required>`;
+    }
+    const EditAddOn = (data) => {
+        data = JSON.parse(data);
+        select("#EditAddOn #id").value = data.id;
+        select("#EditAddOn #name").value = data.name;
+        select("#EditAddOn #price").value = data.price;
+        toggleHidden("#EditAddOn");
+    }
+    const DeleteAddOn = (event, data) => {
+        event.preventDefault();
+        data = JSON.parse(data);
+        const link = event.currentTarget;
+
+        select("#DeleteAddOn form").setAttribute('action', link.href);
+        select("#DeleteAddOn #name").innerHTML = data.name;
+
+        toggleHidden("#DeleteAddOn");
     }
 
     const categories = @json($categories);

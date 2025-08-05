@@ -189,7 +189,18 @@ class UserController extends Controller
         $user = $request->user('user');
         $user = me($user);
 
-        $sale = Sales::where('branch_id', $user->access->branch_id);
+        $filter = [
+            ['branch_id', $user->access->branch_id],
+        ];
+
+        if ($request->order_type != "SEMUA") {
+            array_push($filter, ['order_type', $request->order_type]);
+        }
+        if ($request->payment_method != "SEMUA") {
+            array_push($filter, ['payment_method', $request->payment_method]);
+        }
+
+        $sale = Sales::where($filter);
         if ($request->q != "") {
             $sale = $sale->whereHas('customer', function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%'.$request->q.'%');

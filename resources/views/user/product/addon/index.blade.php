@@ -5,6 +5,7 @@
             <thead class="text-sm text-slate-700 bg-gray-50">
                 <tr>
                     <th scope="col" class="px-6 py-3 text-left">Addon</th>
+                    <th scope="col" class="px-6 py-3 text-left">Harga</th>
                     <th scope="col" class="px-6 py-3 text-left">Berlaku untuk Produk</th>
                     <th scope="col" class="px-6 py-3 text-left"></th>
                 </tr>
@@ -16,6 +17,9 @@
                             {{ $addon->name }}
                         </td>
                         <td class="p-3 px-5 text-sm text-slate-600">
+                            {{ currency_encode($addon->price) }}
+                        </td>
+                        <td class="p-3 px-5 text-sm text-slate-600">
                             <div class="flex items-center gap-2">
                                 @foreach ($addon->products as $product)
                                     <div class="text-xs text-slate-700 bg-slate-200 rounded p-2 px-3 flex items-center gap-2">
@@ -25,6 +29,16 @@
                                         </a>
                                     </div>
                                 @endforeach
+                            </div>
+                        </td>
+                        <td class="p-3 px-5 text-sm text-slate-600">
+                            <div class="flex items-center gap-4">
+                                <button class="p-2 px-3 rounded-lg bg-green-500 text-white text-sm font-medium flex items-center" onclick="EditAddOn('{{ $addon }}')">
+                                    <ion-icon name="create-outline"></ion-icon>
+                                </button>
+                                <a href="{{ route('product.addon.delete', $addon->id) }}" class="p-2 px-3 rounded-lg bg-red-500 text-white text-sm font-medium flex items-center" onclick="DeleteAddOn(event, '{{ $addon }}')">
+                                    <ion-icon name="trash-outline"></ion-icon>
+                                </a>
                             </div>
                         </td>
                     </tr>

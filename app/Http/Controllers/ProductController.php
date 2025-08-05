@@ -32,17 +32,19 @@ class ProductController extends Controller
             'price' => $request->price,
         ]);
 
-        foreach ($images as $image) {
-            $imageFileName = rand(111111, 999999)."_".$image->getClientOriginalName();
-            $productImage = ProductImage::create([
-                'product_id' => $product->id,
-                'filename' => $imageFileName,
-                'size' => $image->getSize(),
-            ]);
-            $image->move(
-                public_path('storage/product_images'),
-                $imageFileName,
-            );
+        if ($request->hasFile('images')) {
+            foreach ($images as $image) {
+                $imageFileName = rand(111111, 999999)."_".$image->getClientOriginalName();
+                $productImage = ProductImage::create([
+                    'product_id' => $product->id,
+                    'filename' => $imageFileName,
+                    'size' => $image->getSize(),
+                ]);
+                $image->move(
+                    public_path('storage/product_images'),
+                    $imageFileName,
+                );
+            }
         }
 
         if ($categoryIDs) {

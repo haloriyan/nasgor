@@ -313,9 +313,9 @@ class UserController extends Controller
 
         if ($request->tab == "addon") {
             $addons = AddOn::orderBy('created_at', 'DESC')
-            ->whereHas('products', function ($query) use ($me) {
-                $query->where('branch_id', $me->access->branch_id);
-            })
+            // ->whereHas('products', function ($query) use ($me) {
+            //     $query->where('branch_id', $me->access->branch_id);
+            // })
             ->with(['products' => function ($query) use ($me) {
                 $query->where('branch_id', $me->access->branch_id);
             }])

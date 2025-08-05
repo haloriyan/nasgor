@@ -55,6 +55,8 @@ class PosController extends Controller
             'total_price' => $totalPrice,
             'total_quantity' => $totalQuantity,
             'notes' => $request->notes,
+            'order_type' => $request->order_type,
+            'payment_method' => $request->order_type == "OFFLINE" ? $request->payment_method : null,
         ]);
 
         foreach ($items as $item) {

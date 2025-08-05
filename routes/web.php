@@ -61,7 +61,8 @@ Route::group(['middleware' => "User"], function () {
         });
 
         Route::group(['prefix' => "addon"], function () {
-            Route::post('delete', [AddOnController::class, 'delete'])->name('product.addon.delete');
+            Route::post('update', [AddOnController::class, 'update'])->name('product.addon.update');
+            Route::post('{id}/delete', [AddOnController::class, 'delete'])->name('product.addon.delete');
             Route::post('store', [AddOnController::class, 'store'])->name('product.addon.store');
         });
 

@@ -1,0 +1,16 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Branch extends Model
+{
+    protected $fillable = [
+        'name', 'address', 'coordinate', 'icon', 'latitude', 'longitude'
+    ];
+
+    public function accesses() {
+        return $this->hasMany(UserAccess::class, 'branch_id');
+    }
+}

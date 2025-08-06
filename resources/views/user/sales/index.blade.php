@@ -59,7 +59,7 @@
                             </a>
                         </td>
                         <td class="px-6 py-4 text-sm text-slate-700">
-                            @if ($sale->customer->id == null)
+                            @if ($sale->customer == null)
                                 -
                             @else
                                 {{ $sale->customer->name }}

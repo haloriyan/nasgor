@@ -143,8 +143,10 @@ class PurchasingController extends Controller
             'message' => "Berhasil menghapus produk " . $item->product->name,
         ]);
     }
-    public function receive($id, Request $request) {
-        $me = me();
+    public function receive($id, Request $request, $me = null, $returnValue = false) {
+        if ($me === null) {
+            $me = me();
+        }
         $purch = Purchasing::where('id', $id);
         $purchasing = $purch->with(['items'])->first();
 
@@ -180,12 +182,19 @@ class PurchasingController extends Controller
 
         $purch->update($toUpdate);
 
-        if ($request->store_movement == 1) {
-            return redirect()->route('inventory.detail', $movement->id);
+        if ($returnValue) {
+            return [
+                'purchasing' => $purch->first(),
+                'movement' => $movement,
+            ];
         } else {
-            return redirect()->route('purchasing.detail', $id)->with([
-                'message' => "Berhasil memproses pembelian"
-            ]);
+            if ($request->store_movement == 1) {
+                return redirect()->route('inventory.detail', $movement->id);
+            } else {
+                return redirect()->route('purchasing.detail', $id)->with([
+                    'message' => "Berhasil memproses pembelian"
+                ]);
+            }
         }
     }
 }

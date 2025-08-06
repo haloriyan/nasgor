@@ -102,8 +102,10 @@ class ReportController extends Controller
             'sales' => $sales,
         ]);
     }
-    public function stockMovement(Request $request) {
-        $me = me();
+    public function stockMovement(Request $request, $me = null) {
+        if ($me == null) {
+            $me = me();
+        }
         $myBranchIDs = [];
         $myBranches = [];
         $startDate = $request->start_date ?? Carbon::now()->subDays(7)->format('Y-m-d');
@@ -118,7 +120,7 @@ class ReportController extends Controller
 
         $query = new Product();
         $productsRaw = null;
-        if ($request->branch_id != "") {
+        if ($request->branch_id != null && $request->branch_id != "null") {
             $productsRaw = $query->where('branch_id', $request->branch_id);
         } else {
             $productsRaw = $query->whereIn('branch_id', $myBranchIDs);
@@ -146,13 +148,19 @@ class ReportController extends Controller
             $products[$p]->movements = $movements;
         }
 
-        return view('user.report.movement', [
-            'request' => $request,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
-            'products' => $products,
-            'branches' => $myBranches,
-        ]);
+        if (in_array('api', $request->route()->middleware())) {
+            return [
+                'products' => $products,
+            ];
+        } else {
+            return view('user.report.movement', [
+                'request' => $request,
+                'startDate' => $startDate,
+                'endDate' => $endDate,
+                'products' => $products,
+                'branches' => $myBranches,
+            ]);
+        }
     }
     public function stockMovementDetail($productID, Request $request) {
         $me = me();

@@ -16,11 +16,13 @@ use Illuminate\Support\Facades\Session;
 
 class InventoryController extends Controller
 {
-    public function store(Request $request) {
+    public function store(Request $request, $me = null, $returnValue = false) {
         $purchasingID = $request->purchasing_id;
         $purch = null;
         $purchasing = null;
-        $me = me();
+        if ($me === null) {
+            $me = me();
+        }
 
         $toCreate = [
             'user_id' => $me->id,
@@ -83,7 +85,11 @@ class InventoryController extends Controller
         //     ]);
         // }
 
-        return redirect()->route('inventory.detail', $inventory->id);
+        if ($returnValue) {
+            return $inventory;
+        } else {
+            return redirect()->route('inventory.detail', $inventory->id);
+        }
     }
     public function detail($id) {
         $message = Session::get('message');

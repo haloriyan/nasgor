@@ -146,7 +146,7 @@
                         <div class="w-8 h-8 flex items-center justify-center rounded-lg text-white bg-{{ $theColor }}-500">
                             <ion-icon name="person-outline"></ion-icon>
                         </div>
-                        <div class="text-sm text-slate-600 flex grow">{{ $sale->customer->name }}</div>
+                        <div class="text-sm text-slate-600 flex grow">{{ @$sale->customer->name ?? "-" }}</div>
                         <div class="text-xs text-slate-500">{{ currency_encode($sale->total_price) }}</div>
                     </div>
                 @endforeach

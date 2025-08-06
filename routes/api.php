@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\PurchasingController;
 use App\Http\Controllers\Api\StockController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\SalesController;
 use App\Models\Purchasing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -49,6 +50,10 @@ Route::group(['prefix' => "pos"], function () {
 });
 
 Route::group(['prefix' => "sales"], function () {
+    Route::group(['prefix' => "{id}"], function () {
+        Route::post('void', [SalesController::class, 'void']);
+        Route::get('/', [SalesController::class, 'detail']);
+    });
     Route::get('/', [UserController::class, 'sales']);
 });
 Route::group(['prefix' => "purchasing"], function () {
@@ -74,5 +79,11 @@ Route::group(['prefix' => "opname"], function () {
         Route::post('publish', [StockController::class, 'publish']);
     });
 
+    Route::post('store', [StockController::class, 'storeOpname']);
     Route::get('/', [UserController::class, 'opname']);
+});
+
+Route::group(['prefix' => "movement"], function () {
+    Route::get('{productID}', [StockController::class, 'movementDetail']);
+    Route::get('/', [StockController::class, 'movementReport']);
 });

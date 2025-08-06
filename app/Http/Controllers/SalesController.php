@@ -37,19 +37,25 @@ class SalesController extends Controller
     public function detail($id, Request $request) {
         $message = Session::get('message');
         $sales = Sales::where('id', $id)
-        ->with(['items', 'items.product', 'items.addons.addon', 'customer', 'review', 'branch'])
+        ->with(['items', 'items.product.images', 'items.addons.addon', 'customer', 'review', 'branch', 'user'])
         ->first();
 
         $waLink = null;
-        if ($sales->customer->phone != null) {
+        if (@$sales->customer->phone != null) {
             $waLink = $this->buildWAMeLink($sales);
         }
         
-        return view('user.sales.detail.index', [
-            'sales' => $sales,
-            'message' => $message,
-            'waLink' => $waLink,
-        ]);
+        if (in_array('api', $request->route()->middleware())) {
+            return response()->json([
+                'sales' => $sales,
+            ]);
+        } else {
+            return view('user.sales.detail.index', [
+                'sales' => $sales,
+                'message' => $message,
+                'waLink' => $waLink,
+            ]);
+        }
     }
 
     public function buildWAMeLink($sale) {
@@ -272,5 +278,17 @@ _".env('APP_NAME')." - {$storeName}_
             'sales' => $sales,
             'message' => $message,
         ]);
+    }
+    public function void($id, Request $request, $returnValue = false) {
+        $data = Sales::where('id', $id);
+        $data->update([
+            'status' => "VOID"
+        ]);
+
+        if ($returnValue) {
+            return $data->first();
+        } else {
+            return redirect()->back();
+        }
     }
 }

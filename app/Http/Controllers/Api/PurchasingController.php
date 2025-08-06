@@ -74,11 +74,11 @@ class PurchasingController extends Controller
             'message' => "Berhasil menghapus produk"
         ]);
     }
-    public function publish($id) {
-        $data = Purchasing::where('id', $id);
-        $data->update([
-            'status' => "PUBLISHED"
-        ]);
+    public function publish($id, Request $request) {
+        $user = me($request->user('user'));
+        $controller = new ControllersPurchasingController();
+        $controller->receive($id, $request, $user, true);
+
         return response()->json([
             'message' => "Berhasil menambah produk"
         ]);

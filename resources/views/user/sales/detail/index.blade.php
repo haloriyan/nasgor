@@ -37,58 +37,60 @@
     @endif
 
     <div class="grid grid-cols-3 mobile:grid-cols-1 gap-8">
-        <div class="bg-white rounded-lg border">
-            <div class="h-20 px-8 flex items-center gap-4 border-b">
-                <ion-icon name="person-outline" class="text-xl"></ion-icon>
-                <div class="flex grow">Pelanggan</div>
-                @if ($sales->status == "DRAFT")
-                    <button class="p-2 px-4 rounded-lg bg-primary text-white text-xs font-medium flex items-center" onclick="toggleHidden('#EditCustomer')">
-                        Ganti
-                    </button>
-                @endif
-            </div>
-            <div class="p-8">
-                <div class="text-slate-700 font-medium flex grow mt-1">{{ $sales->customer->name }}</div>
-                <div class="flex items-center gap-2 mt-2">
-                    @foreach ($sales->customer->types as $type)
-                        <div class="p-1 px-3 rounded-lg text-xs text-white font-medium" style="background-color: {{ $type->color }}25;color: {{ $type->color }}">
-                            {{ $type->name }}
-                        </div>
-                    @endforeach
+        @if ($sales->customer != null)
+            <div class="bg-white rounded-lg border">
+                <div class="h-20 px-8 flex items-center gap-4 border-b">
+                    <ion-icon name="person-outline" class="text-xl"></ion-icon>
+                    <div class="flex grow">Pelanggan</div>
+                    @if ($sales->status == "DRAFT")
+                        <button class="p-2 px-4 rounded-lg bg-primary text-white text-xs font-medium flex items-center" onclick="toggleHidden('#EditCustomer')">
+                            Ganti
+                        </button>
+                    @endif
                 </div>
-
-                <div class="flex items-center gap-4 text-slate-500 mt-6">
-                    <ion-icon name="call-outline" class="text-lg"></ion-icon>
-                    <div class="text-sm">{{ $sales->customer->phone }}</div>
-                </div>
-                <div class="flex items-center gap-4 text-slate-500 mt-2">
-                    <ion-icon name="mail-outline" class="text-lg"></ion-icon>
-                    <div class="text-sm">{{ $sales->customer->email }}</div>
-                </div>
-
-                @if ($sales->review != null)
-                    <div class="border-t pt-4 mt-4">
-                        <div class="flex items-center gap-2">
-                            <div class="text-xs text-slate-400">Penilaian :</div>
-                            <div class="flex items-center justify-end grow gap-2">
-                                @for ($i = 1; $i <= 5; $i++)
-                                    <ion-icon name="star" class="{{ $sales->review->rating < $i ? 'text-slate-400' : 'text-yellow-500' }}"></ion-icon>
-                                @endfor
+                <div class="p-8">
+                    <div class="text-slate-700 font-medium flex grow mt-1">{{ @$sales->customer->name }}</div>
+                    <div class="flex items-center gap-2 mt-2">
+                        @foreach (@$sales->customer->types as $type)
+                            <div class="p-1 px-3 rounded-lg text-xs text-white font-medium" style="background-color: {{ $type->color }}25;color: {{ $type->color }}">
+                                {{ $type->name }}
                             </div>
-                        </div>
-                        <div class="text-sm text-slate-600 mt-4 border rounded-lg p-4">{{ $sales->review->body }}</div>
+                        @endforeach
                     </div>
-                @endif
 
-                @if ($sales->review == null && $sales->payment_status == "PAID" && $sales->customer->phone != null)
-                    <div class="border-t pt-4 mt-4 flex justify-end">
-                        <a href="{{ $waLink }}" class="bg-green-500 p-2 px-4 rounded-full text-white text-sm font-medium" target="_blank">
-                            Kirim Invoice
-                        </a>
+                    <div class="flex items-center gap-4 text-slate-500 mt-6">
+                        <ion-icon name="call-outline" class="text-lg"></ion-icon>
+                        <div class="text-sm">{{ @$sales->customer->phone }}</div>
                     </div>
-                @endif
+                    <div class="flex items-center gap-4 text-slate-500 mt-2">
+                        <ion-icon name="mail-outline" class="text-lg"></ion-icon>
+                        <div class="text-sm">{{ @$sales->customer->email }}</div>
+                    </div>
+
+                    @if ($sales->review != null)
+                        <div class="border-t pt-4 mt-4">
+                            <div class="flex items-center gap-2">
+                                <div class="text-xs text-slate-400">Penilaian :</div>
+                                <div class="flex items-center justify-end grow gap-2">
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        <ion-icon name="star" class="{{ $sales->review->rating < $i ? 'text-slate-400' : 'text-yellow-500' }}"></ion-icon>
+                                    @endfor
+                                </div>
+                            </div>
+                            <div class="text-sm text-slate-600 mt-4 border rounded-lg p-4">{{ $sales->review->body }}</div>
+                        </div>
+                    @endif
+
+                    @if ($sales->review == null && $sales->payment_status == "PAID" && @$sales->customer->phone != null)
+                        <div class="border-t pt-4 mt-4 flex justify-end">
+                            <a href="{{ $waLink }}" class="bg-green-500 p-2 px-4 rounded-full text-white text-sm font-medium" target="_blank">
+                                Kirim Invoice
+                            </a>
+                        </div>
+                    @endif
+                </div>
             </div>
-        </div>
+        @endif
         <div class="bg-white rounded-lg border">
             <div class="h-20 px-8 flex items-center gap-4 border-b">
                 <ion-icon name="create-outline" class="text-xl"></ion-icon>

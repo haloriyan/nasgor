@@ -58,17 +58,23 @@ Route::group(['middleware' => "User"], function () {
             Route::post('store', [CategoryController::class, 'store'])->name('product.category.store');
             Route::post('delete', [CategoryController::class, 'delete'])->name('product.category.delete');
             Route::get('{id}/toggle-pos', [CategoryController::class, 'togglePos'])->name('product.category.togglePos');
+            Route::get('{id}/priority/{action}', [CategoryController::class, 'priority'])->name('product.category.priority');
         });
 
         Route::group(['prefix' => "addon"], function () {
             Route::post('update', [AddOnController::class, 'update'])->name('product.addon.update');
-            Route::post('{id}/delete', [AddOnController::class, 'delete'])->name('product.addon.delete');
+            Route::group(['prefix' => "{id}"], function () {
+                Route::post('add-product', [AddOnController::class, 'addProduct'])->name('product.addon.addProduct');
+                Route::post('delete', [AddOnController::class, 'delete'])->name('product.addon.delete');
+            });
             Route::post('store', [AddOnController::class, 'store'])->name('product.addon.store');
         });
 
         Route::group(['prefix' => "{id}"], function () {
             Route::post('image/store', [ProductController::class, 'storeImage'])->name('product.detail.image.store');
             Route::get('image/delete/{imageID}', [ProductController::class, 'deleteImage'])->name('product.detail.image.delete');
+
+            Route::get('priority/{action}', [ProductController::class, 'priority'])->name('product.priority');
 
             Route::group(['prefix' => "ingredient"], function () {
                 Route::post('store', [ProductController::class, 'storeIngredient'])->name('product.detail.ingredient.store');

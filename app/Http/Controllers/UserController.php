@@ -301,14 +301,18 @@ class UserController extends Controller
         $addons = [];
         $message = Session::get('message');
         $tab = $request->tab == "" ? "produk" : $request->tab;
-        $categories = Category::orderBy('name', 'ASC')->with(['products'])->get();
+        $categories = Category::orderBy('updated_at', 'DESC')
+        ->with(['products' => function ($query) use ($me) {
+            $query->where('branch_id', $me->access->branch_id);
+        }])
+        ->get();
 
         if ($request->tab == "produk" || $request->tab == "") {
             $tab = "produk";
-            $products = Product::where([
-                ['branch_id', $me->access->branch_id],
-            ])->orderBy('updated_at', 'DESC')
-            ->with(['images', 'categories'])->paginate(25);
+            // $products = Product::where([
+            //     ['branch_id', $me->access->branch_id],
+            // ])->orderBy('updated_at', 'DESC')
+            // ->with(['images', 'categories'])->paginate(25);
         }
 
         if ($request->tab == "addon") {

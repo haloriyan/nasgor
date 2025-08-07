@@ -235,4 +235,14 @@ class ProductController extends Controller
             'message' => "Berhasil menghapus Add On"
         ]);
     }
+    public function priority($id, $action) {
+        $data = Product::where('id', $id);
+        if ($action == "increase") {
+            $data->increment('priority');
+        } else {
+            $data->decrement('priority');
+        }
+
+        return redirect()->back();
+    }
 }

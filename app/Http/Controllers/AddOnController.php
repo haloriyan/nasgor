@@ -51,4 +51,24 @@ class AddOnController extends Controller
             'message' => "Berhasil menghapus Add On"
         ]);
     }
+    public function addProduct($id, Request $request) {
+        $productIDs = json_decode($request->product_ids);
+        foreach ($productIDs as $productID) {
+            $productAddOn = ProductAddOn::where([
+                ['product_id', $productID],
+                ['addon_id', $id]
+            ])->first();
+
+            if ($productAddOn == null) {
+                ProductAddOn::create([
+                    'product_id' => $productID,
+                    'addon_id' => $id,
+                ]);
+            }
+        }
+
+        return redirect()->back()->with([
+            'message' => "Berhasil menambahkan addon ke produk terpilih"
+        ]);
+    }
 }

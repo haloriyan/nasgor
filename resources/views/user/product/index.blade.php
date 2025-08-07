@@ -56,6 +56,10 @@
 @include('user.product.'.$tab.'.delete')
 @include('user.product.addon.edit')
 
+@if ($tab == "addon")
+    @include('user.product.addon.add_product')
+@endif
+
 @endsection
 
 @section('javascript')
@@ -130,6 +134,23 @@
             label: "Berlaku untuk Produk",
             parseResponse: (data) => data.products // if the response is { categories: [...] }
         });
+    }
+    if (select("#AddOn_ProductSelector") !== null) {
+        new MultiSelectorAPI('#AddOn_ProductSelector', [], {
+            fetchUrl: '/api/product/search?branch_id={{ $me->access->branch_id }}&q=',
+            name: "product_ids",
+            label: "Cari Produk",
+            parseResponse: (data) => data.products // if the response is { categories: [...] }
+        });
+    }
+
+    const AddProductToAddOn = (event, addon) => {
+        event.preventDefault();
+        addon = JSON.parse(addon);
+        const link = event.currentTarget;
+        select("#AddProductAddOn form").setAttribute("action", link.href);
+        select("#AddProductAddOn #name").innerHTML = addon.name;
+        toggleHidden("#AddProductAddOn");
     }
 </script>
 @endsection

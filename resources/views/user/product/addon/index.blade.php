@@ -29,6 +29,9 @@
                                         </a>
                                     </div>
                                 @endforeach
+                                <a href="{{ route('product.addon.addProduct', $addon->id) }}" class="bg-blue-100 p-2 px-3 rounded-lg flex items-center" onclick="AddProductToAddOn(event, '{{ $addon }}')">
+                                    <ion-icon name="add-outline" class="text-primary"></ion-icon>
+                                </a>
                             </div>
                         </td>
                         <td class="p-3 px-5 text-sm text-slate-600">

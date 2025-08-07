@@ -67,4 +67,14 @@ class CategoryController extends Controller
             'tab' => "kategori"
         ]);
     }
+    public function priority($id, $action) {
+        $data = Category::where('id', $id);
+        if ($action == "increase") {
+            $data->increment('priority');
+        } else {
+            $data->decrement('priority');
+        }
+
+        return redirect()->back();
+    }
 }

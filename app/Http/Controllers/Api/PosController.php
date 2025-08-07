@@ -20,10 +20,12 @@ class PosController extends Controller
         $user = me($request->user('user'));
         $branch = $user->access->branch;
         $categories = Category::where('pos_visibility', true)
-        ->whereHas('products', function ($query) use ($branch) {
+        // ->whereHas('products', function ($query) use ($branch) {
+        //     $query->where('branch_id', $branch->id);
+        // })
+        ->with(['products' => function ($query) use ($branch) {
             $query->where('branch_id', $branch->id);
-        })
-        ->with(['products.images', 'products.prices', 'products.addons.addon'])
+        }, 'products.images', 'products.prices', 'products.addons.addon'])
         ->orderBy('name', 'ASC')->get();
 
         return response()->json([

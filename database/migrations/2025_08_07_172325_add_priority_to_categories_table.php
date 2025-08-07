@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('categories', function (Blueprint $table) {
-            $table->integer('priority')->unsigned()->after('pos_visibility');
+            $table->integer('priority')->after('pos_visibility');
         });
     }
 

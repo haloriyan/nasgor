@@ -236,11 +236,28 @@ class ProductController extends Controller
         ]);
     }
     public function priority($id, $action) {
+        $products = [];
+        $updatedAtOrder = "DESC";
+        
         $data = Product::where('id', $id);
         if ($action == "increase") {
             $data->increment('priority');
+            $updatedAtOrder = "DESC";
         } else {
             $data->decrement('priority');
+            $updatedAtOrder = "ASC";
+        }
+
+        $products = Product::orderBy('priority', 'DESC')
+            ->orderBy('updated_at', $updatedAtOrder)
+            ->get(['id', 'priority']);
+
+        $reverseCounter = count($products) - 1;
+        foreach ($products as $c => $product) {
+            Product::where('id', $product->id)->update([
+                'priority' => $reverseCounter,
+            ]);
+            $reverseCounter--;
         }
 
         return redirect()->back();

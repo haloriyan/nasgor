@@ -68,11 +68,28 @@ class CategoryController extends Controller
         ]);
     }
     public function priority($id, $action) {
+        $categories = [];
+        $updatedAtOrder = "DESC";
+
         $data = Category::where('id', $id);
         if ($action == "increase") {
             $data->increment('priority');
+            $updatedAtOrder = "DESC";
         } else {
             $data->decrement('priority');
+            $updatedAtOrder = "ASC";
+        }
+
+        $categories = Category::orderBy('priority', 'DESC')
+            ->orderBy('updated_at', $updatedAtOrder)
+            ->get();
+
+        $reverseCounter = count($categories) - 1;
+        foreach ($categories as $c => $category) {
+            Category::where('id', $category->id)->update([
+                'priority' => $reverseCounter,
+            ]);
+            $reverseCounter--;
         }
 
         return redirect()->back();

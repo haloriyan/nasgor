@@ -301,7 +301,8 @@ class UserController extends Controller
         $addons = [];
         $message = Session::get('message');
         $tab = $request->tab == "" ? "produk" : $request->tab;
-        $categories = Category::orderBy('updated_at', 'DESC')
+        $categories = Category::orderBy('priority', 'DESC')
+        ->orderBy('updated_at', 'DESC')
         ->with(['products' => function ($query) use ($me) {
             $query->where('branch_id', $me->access->branch_id);
         }])

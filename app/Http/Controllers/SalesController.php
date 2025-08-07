@@ -69,7 +69,7 @@ class SalesController extends Controller
 
         $orderText = '';
         foreach ($sale->items as $item) {
-            $productName = $item->product->name;
+            $productName = $item->product->name ?? "-";
             $qty = $item->quantity;
             $grandTotal = $item->grand_total;
             $orderText .= "- {$productName} x{$qty} — Rp" . number_format($grandTotal, 0, ',', '.') . "\n";

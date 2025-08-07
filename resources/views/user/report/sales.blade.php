@@ -66,7 +66,7 @@
                 <div class="w-36"></div>
             @endif
 
-            <div class="w-40">{{ $item->product->name }}</div>
+            <div class="w-40">{{ @$item->product->name }}</div>
             <div class="w-24">{{ currency_encode($item->price) }}</div>
             <div class="w-24">{{ $item->quantity }}</div>
             <div class="w-28">{{ currency_encode($item->total_price) }}</div>

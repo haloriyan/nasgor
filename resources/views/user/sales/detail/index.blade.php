@@ -156,12 +156,12 @@
                             <td class="px-6 py-4 text-sm text-slate-700">
                                 <div class="flex items-start gap-4">
                                     <img 
-                                        src="{{ asset('storage/product_images/' . $item->product->images[0]->filename) }}" 
+                                        src="{{ asset('storage/product_images/' . @$item->product->images[0]->filename) }}" 
                                         alt="{{ $item->id }}"
                                         class="w-16 h-16 rounded-lg object-cover"
                                     >
                                     <div class="flex flex-col gap-2">
-                                        <div class="text-sm text-slate-600 font-medium">{{ $item->product->name }}</div>
+                                        <div class="text-sm text-slate-600 font-medium">{{ @$item->product->name }}</div>
                                         <div class="flex flex-col gap-1">
                                             @foreach ($item->addons as $add)
                                                 <div class="text-xs text-slate-500">+ {{ $add->quantity }} {{ $add->addon->name }}</div>

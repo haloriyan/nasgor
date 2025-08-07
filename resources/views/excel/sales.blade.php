@@ -29,7 +29,7 @@
                         <td colspan="4"></td>
                     @endif
 
-                    <td>{{ $item->product->name }}</td>
+                    <td>{{ @$item->product->name }}</td>
                     <td>{{ $item->price }}</td>
                     <td>{{ $item->quantity }}</td>
                     <td>{{ $item->total_price }}</td>

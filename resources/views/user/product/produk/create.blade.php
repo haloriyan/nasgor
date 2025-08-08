@@ -17,12 +17,17 @@
         
         <div class="group border focus-within:border-primary rounded-lg p-2 relative">
             <label class="text-slate-500 group-focus-within:text-primary text-xs absolute top-2 left-2">Nama Produk</label>
-            <input type="text" name="name" id="name" class="w-full h-10 mt-2 outline-none bg-transparent text-sm text-slate-700" required />
+            <input type="text" name="name" id="name" class="w-full h-10 mt-2 outline-none bg-transparent text-sm text-slate-700" />
         </div>
 
         <div class="group border focus-within:border-primary rounded-lg p-2 relative">
             <label class="text-slate-500 group-focus-within:text-primary text-xs absolute top-2 left-2">HPP</label>
-            <input type="text" name="price" id="price" class="w-full h-10 mt-2 outline-none bg-transparent text-sm text-slate-700" required />
+            <input type="text" name="price" id="price" class="w-full h-10 mt-2 outline-none bg-transparent text-sm text-slate-700" />
+        </div>
+
+        <div class="border-t pt-4 mt-4 flex items-center gap-4">
+            <div class="text-xs text-slate-400 flex grow">Bulk Import</div>
+            <input type="file" name="bulk" class="text-xs">
         </div>
 
         <div class="flex items-center justify-end gap-4 mt-4">

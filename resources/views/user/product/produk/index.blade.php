@@ -1,156 +1,99 @@
 <div class="flex flex-col gap-4 mt-8">
     @foreach ($categories as $c => $category)
-        <div class="flex flex-col gap-6 bg-white p-6 rounded-lg shadow shadow-slate-200">
-            <div class="flex items-center gap-4">
-                <h3 class="text-lg text-slate-700 font-medium flex grow">{{ $category->name }}</h3>
-                @if ($c != 0)
-                    <a href="{{ route('product.category.priority', [$category->id, 'increase']) }}" class="flex items-center">
-                        <ion-icon name="arrow-up-outline" class="text-lg text-slate-700"></ion-icon>
-                    </a>
-                @endif
-                @if ($c != count($categories) - 1)
-                    <a href="{{ route('product.category.priority', [$category->id, 'decrease']) }}" class="flex items-center">
-                        <ion-icon name="arrow-down-outline" class="text-lg text-slate-700"></ion-icon>
-                    </a>
-                @endif
-            </div>
+        @if ($category->products->count() > 0)
+            <div class="flex flex-col gap-6 bg-white p-6 rounded-lg shadow shadow-slate-200">
+                <div class="flex items-center gap-4">
+                    <h3 class="text-lg text-slate-700 font-medium flex grow">{{ $category->name }}</h3>
+                    @if ($c != 0)
+                        <a href="{{ route('product.category.priority', [$category->id, 'increase']) }}" class="flex items-center">
+                            <ion-icon name="arrow-up-outline" class="text-lg text-slate-700"></ion-icon>
+                        </a>
+                    @endif
+                    @if ($c != count($categories) - 1)
+                        <a href="{{ route('product.category.priority', [$category->id, 'decrease']) }}" class="flex items-center">
+                            <ion-icon name="arrow-down-outline" class="text-lg text-slate-700"></ion-icon>
+                        </a>
+                    @endif
+                </div>
 
-            <div class="min-w-full overflow-hidden overflow-x-auto p-5">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="text-sm text-slate-700 bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left"></th>
-                            <th scope="col" class="px-6 py-3 text-left">
-                                <ion-icon name="image-outline"></ion-icon>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left">Produk</th>
-                            <th scope="col" class="px-6 py-3 text-left">HPP</th>
-                            <th scope="col" class="px-6 py-3 text-left">Quantity</th>
-                            <th scope="col" class="px-6 py-3 text-left"></th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        @foreach ($category->products as $p => $product)
+                <div class="min-w-full overflow-hidden overflow-x-auto p-5 ProductWrapper" id="ProductWrapper_{{ $c }}">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="text-sm text-slate-700 bg-gray-50">
                             <tr>
-                                <td class="px-6 py-4 text-sm text-slate-700 flex items-center gap-2">
-                                    @if (!$loop->first)
-                                        <a href="{{ route('product.priority', [$product->id, 'increase']) }}" class="flex items-center">
-                                            <ion-icon name="arrow-up-outline" class="text-lg text-slate-700"></ion-icon>
-                                        </a>
-                                    @endif
-                                    @if (!$loop->last)
-                                        <a href="{{ route('product.priority', [$product->id, 'decrease']) }}" class="flex items-center">
-                                            <ion-icon name="arrow-down-outline" class="text-lg text-slate-700"></ion-icon>
-                                        </a>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 text-sm text-slate-700">
-                                    @if ($product->images->count() > 0)
-                                        <img 
-                                            src="{{ asset('storage/product_images/' . $product->images[0]->filename) }}" 
-                                            alt="{{ $product->name }}" 
-                                            class="h-16 aspect-square rounded-lg object-cover"
-                                        >
-                                    @else
-                                        <div 
-                                            class="h-16 aspect-square rounded-lg bg-slate-200 flex items-center justify-center"
-                                        >
-                                            <ion-icon name="image-outline" class="text-lg text-slate-700"></ion-icon>
-                                        </div>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 text-sm text-slate-700">
-                                    <div>{{ $product->name }}</div>
-                                    <div class="flex items-center gap-2 text-xs mt-2">
-                                        @foreach ($product->categories as $category)
-                                            <div class="bg-primary-transparent text-primary p-1 px-3 rounded-full">
-                                                {{ $category->name }}
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-slate-700">
-                                    {{ currency_encode($product->price) }}
-                                </td>
-                                <td class="px-6 py-4 text-sm text-slate-700">
-                                    {{ $product->quantity }}
-                                </td>
-                                <td class="px-6 py-4 text-sm text-slate-700 flex items-center gap-4">
-                                    <a href="{{ route('product.detail', $product->id) }}" class="bg-primary text-white flex items-center p-2 px-3 rounded-lg">
-                                        <ion-icon name="eye-outline" class="text-lg"></ion-icon>
-                                    </a>
-                                    <button class="bg-red-500 text-white flex items-center p-2 px-3 rounded-lg" onclick="DeleteProduct('{{ $product }}')">
-                                        <ion-icon name="trash-outline" class="text-lg"></ion-icon>
-                                    </button>
-                                </td>
+                                <th scope="col" class="px-6 py-3 text-left"></th>
+                                <th scope="col" class="px-6 py-3 text-left">
+                                    <ion-icon name="image-outline"></ion-icon>
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left">Produk</th>
+                                <th scope="col" class="px-6 py-3 text-left">HPP</th>
+                                <th scope="col" class="px-6 py-3 text-left">Quantity</th>
+                                <th scope="col" class="px-6 py-3 text-left"></th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            @foreach ($category->products as $p => $product)
+                                <tr>
+                                    <td class="px-6 py-4 text-sm text-slate-700 flex items-center gap-2">
+                                        @if (!$loop->first)
+                                            <a href="{{ route('product.priority', [$product->id, 'increase']) }}" class="flex items-center">
+                                                <ion-icon name="arrow-up-outline" class="text-lg text-slate-700"></ion-icon>
+                                            </a>
+                                        @endif
+                                        @if (!$loop->last)
+                                            <a href="{{ route('product.priority', [$product->id, 'decrease']) }}" class="flex items-center">
+                                                <ion-icon name="arrow-down-outline" class="text-lg text-slate-700"></ion-icon>
+                                            </a>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-slate-700">
+                                        @if ($product->images->count() > 0)
+                                            <img 
+                                                src="{{ asset('storage/product_images/' . $product->images[0]->filename) }}" 
+                                                alt="{{ $product->name }}" 
+                                                class="h-16 aspect-square rounded-lg object-cover"
+                                            >
+                                        @else
+                                            <div 
+                                                class="h-16 aspect-square rounded-lg bg-slate-200 flex items-center justify-center"
+                                            >
+                                                <ion-icon name="image-outline" class="text-lg text-slate-700"></ion-icon>
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-slate-700">
+                                        <div>{{ $product->name }}</div>
+                                        <div class="flex items-center gap-2 text-xs mt-2">
+                                            @foreach ($product->categories as $category)
+                                                <div class="bg-primary-transparent text-primary p-1 px-3 rounded-full">
+                                                    {{ $category->name }}
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-slate-700">
+                                        {{ currency_encode($product->price) }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-slate-700">
+                                        {{ $product->quantity }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-slate-700 flex items-center gap-4">
+                                        <a href="{{ route('product.detail', $product->id) }}" class="bg-primary text-white flex items-center p-2 px-3 rounded-lg">
+                                            <ion-icon name="eye-outline" class="text-lg"></ion-icon>
+                                        </a>
+                                        <button class="bg-red-500 text-white flex items-center p-2 px-3 rounded-lg" onclick="DeleteProduct('{{ $product }}')">
+                                            <ion-icon name="trash-outline" class="text-lg"></ion-icon>
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- <div class="flex justify-end">
+                    <div class="cursor-pointer text-sm text-primary" onclick="toggleHidden('#ProductWrapper_{{ $c }}')">Toggle</div>
+                </div> --}}
             </div>
-        </div>
+        @endif
     @endforeach
 </div>
-{{-- <div class="flex flex-col gap-4 bg-white p-8 rounded-lg shadow shadow-slate-200 mt-8">
-    <h3 class="text-xl text-slate-700 font-medium">Produk</h3>
-    <div class="min-w-full overflow-hidden overflow-x-auto p-5">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="text-sm text-slate-700 bg-gray-50">
-                <tr>
-                    <th scope="col" class="px-6 py-3 text-left">
-                        <ion-icon name="image-outline"></ion-icon>
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left">Produk</th>
-                    <th scope="col" class="px-6 py-3 text-left">HPP</th>
-                    <th scope="col" class="px-6 py-3 text-left">Quantity</th>
-                    <th scope="col" class="px-6 py-3 text-left"></th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-                @foreach ($products as $product)
-                    <tr>
-                        <td class="px-6 py-4 text-sm text-slate-700">
-                            @if ($product->images->count() > 0)
-                                <img 
-                                    src="{{ asset('storage/product_images/' . $product->images[0]->filename) }}" 
-                                    alt="{{ $product->name }}" 
-                                    class="h-16 aspect-square rounded-lg object-cover"
-                                >
-                            @else
-                                <div 
-                                    class="h-16 aspect-square rounded-lg bg-slate-200 flex items-center justify-center"
-                                >
-                                    <ion-icon name="image-outline" class="text-lg text-slate-700"></ion-icon>
-                                </div>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 text-sm text-slate-700">
-                            <div>{{ $product->name }}</div>
-                            <div class="flex items-center gap-2 text-xs mt-2">
-                                @foreach ($product->categories as $category)
-                                    <div class="bg-primary-transparent text-primary p-1 px-3 rounded-full">
-                                        {{ $category->name }}
-                                    </div>
-                                @endforeach
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-slate-700">
-                            {{ currency_encode($product->price) }}
-                        </td>
-                        <td class="px-6 py-4 text-sm text-slate-700">
-                            {{ $product->quantity }}
-                        </td>
-                        <td class="px-6 py-4 text-sm text-slate-700 flex items-center gap-4">
-                            <a href="{{ route('product.detail', $product->id) }}" class="bg-primary text-white flex items-center p-2 px-3 rounded-lg">
-                                <ion-icon name="eye-outline" class="text-lg"></ion-icon>
-                            </a>
-                            <button class="bg-red-500 text-white flex items-center p-2 px-3 rounded-lg" onclick="DeleteProduct('{{ $product }}')">
-                                <ion-icon name="trash-outline" class="text-lg"></ion-icon>
-                            </button>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-</div> --}}

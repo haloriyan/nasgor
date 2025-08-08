@@ -7,9 +7,9 @@
     @csrf
     <h1 class="text-xl text-slate-700 font-medium mb-4">Login</h1>
     <label for="email" class="text-slate-500 text-xs">Username</label>
-    <input type="text" name="email" id="email" class="w-full h-14 rounded-lg bg-slate-100 text-sm text-slate-700 px-4 outline-0" required value="admin@admin.com">
+    <input type="text" name="email" id="email" class="w-full h-14 rounded-lg bg-slate-100 text-sm text-slate-700 px-4 outline-0" required value="">
     <label for="email" class="text-slate-500 text-xs mt-2">Password</label>
-    <input type="password" name="password" id="password" class="w-full h-14 rounded-lg bg-slate-100 text-sm text-slate-700 px-4 outline-0" required value="123456">
+    <input type="password" name="password" id="password" class="w-full h-14 rounded-lg bg-slate-100 text-sm text-slate-700 px-4 outline-0" required value="">
 
     @if ($errors->count() > 0)
         @foreach ($errors->all() as $err)

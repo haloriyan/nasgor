@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\ProductImport;
 use App\Models\AddOn;
 use App\Models\Category;
 use App\Models\Product;
@@ -13,53 +14,73 @@ use App\Models\ProductPrice;
 use App\Models\StockMovement;
 use App\Models\StockMovementProduct;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ProductController extends Controller
 {
+    public function bulkImport($file, $me) {
+        Log::info('bulk import');
+
+        $spreadsheet = IOFactory::load($file->getRealPath());
+        $sheetNames = $spreadsheet->getSheetNames();
+        Log::info('Sheet names: ' . json_encode($sheetNames));
+
+        Excel::import(
+            new ProductImport($sheetNames, $me),
+            $file
+        );
+    }
     public function store(Request $request) {
         $me = me();
-        $categoryIDs = json_decode($request->category_ids);
-        $images = $request->file('images');
 
-        $product = Product::create([
-            'branch_id' => $me->access->branch_id,
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            'description' => $request->description,
-            'price' => $request->price,
-        ]);
+        if ($request->hasFile('bulk')) {
+            $this->bulkImport($request->file('bulk'), $me);
+        } else {
+            $categoryIDs = json_decode($request->category_ids);
+            $images = $request->file('images');
 
-        if ($request->hasFile('images')) {
-            foreach ($images as $image) {
-                $imageFileName = rand(111111, 999999)."_".$image->getClientOriginalName();
-                $productImage = ProductImage::create([
-                    'product_id' => $product->id,
-                    'filename' => $imageFileName,
-                    'size' => $image->getSize(),
-                ]);
-                $image->move(
-                    public_path('storage/product_images'),
-                    $imageFileName,
-                );
+            $product = Product::create([
+                'branch_id' => $me->access->branch_id,
+                'name' => $request->name,
+                'slug' => Str::slug($request->name),
+                'description' => $request->description,
+                'price' => $request->price,
+            ]);
+
+            if ($request->hasFile('images')) {
+                foreach ($images as $image) {
+                    $imageFileName = rand(111111, 999999)."_".$image->getClientOriginalName();
+                    $productImage = ProductImage::create([
+                        'product_id' => $product->id,
+                        'filename' => $imageFileName,
+                        'size' => $image->getSize(),
+                    ]);
+                    $image->move(
+                        public_path('storage/product_images'),
+                        $imageFileName,
+                    );
+                }
             }
-        }
 
-        if ($categoryIDs) {
-            foreach ($categoryIDs as $cat) {
-                $category = ProductCategory::create([
-                    'product_id' => $product->id,
-                    'category_id' => $cat,
-                ]);
+            if ($categoryIDs) {
+                foreach ($categoryIDs as $cat) {
+                    $category = ProductCategory::create([
+                        'product_id' => $product->id,
+                        'category_id' => $cat,
+                    ]);
+                }
             }
         }
 
         return redirect()->route('product', [
             'tab' => "produk"
         ])->with([
-            'message' => "Berhasil menambahkan produk " . $product->name,
+            'message' => "Berhasil menambahkan produk " . @$product->name,
         ]);
     }
     public function detail($id, Request $request) {

@@ -38,15 +38,15 @@ class UserController extends Controller
     public function login(Request $request) {
         $u = User::where('email', $request->email);
         $user = $u->first();
-        $message = null;
+        $message = "Kombinasi email dan password tidak tepat.";
         $token = null;
 
-        if (Hash::check($request->password, $user->password)) {
-            $token = $user->createToken('app')->plainTextToken;
-            $user = me($user);
-        } else {
-            $user = null;
-            $message = "Kombinasi email dan password tidak tepat.";
+        if ($user != null) {
+            if (Hash::check($request->password, $user->password)) {
+                $token = $user->createToken('app')->plainTextToken;
+                $user = me($user);
+                $message = "Berhasil login.";
+            }
         }
 
         return response()->json([

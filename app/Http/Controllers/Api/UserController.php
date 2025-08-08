@@ -40,16 +40,19 @@ class UserController extends Controller
         $user = $u->first();
         $message = "Kombinasi email dan password tidak tepat.";
         $token = null;
+        $status = 403;
 
         if ($user != null) {
             if (Hash::check($request->password, $user->password)) {
                 $token = $user->createToken('app')->plainTextToken;
                 $user = me($user);
                 $message = "Berhasil login.";
+                $status = 200;
             }
         }
 
         return response()->json([
+            'status' => $status,
             'user' => $user,
             'token' => $token,
             'message' => $message,

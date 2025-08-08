@@ -9,6 +9,7 @@ use App\Models\StockMovement;
 use App\Models\StockMovementProduct;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 class PurchasingController extends Controller
@@ -104,14 +105,16 @@ class PurchasingController extends Controller
                 ['product_id', $productID]
             ]);
             $check = $c->first();
+            $price = $request->price ?? $product->price;
+            Log::info($request->price);
 
             if ($check == null) {
                 $item = PurchasingProduct::create([
                     'purchasing_id' => $id,
                     'product_id' => $productID,
                     'quantity' => $quantity,
-                    'price' => $product->price,
-                    'total_price' => $product->price * $quantity,
+                    'price' => $price,
+                    'total_price' => $price * $quantity,
                 ]);
             } else {
                 $newQuantity = $check->quantity;

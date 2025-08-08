@@ -31,7 +31,10 @@ class ReportController extends Controller
         }
 
         $purch = Purchasing::whereIn('branch_id', $myBranchIDs)
-        ->whereBetween('created_at', [$startDate, $endDate])
+        ->whereBetween('created_at', [
+            Carbon::parse($startDate)->startOfDay(),
+            Carbon::parse($endDate)->endOfDay()
+        ])
         ->with(['branch', 'items.product', 'creator', 'receiver', 'supplier'])
         ->orderBy('created_at', 'DESC');
 
@@ -74,7 +77,10 @@ class ReportController extends Controller
         }
 
         $sale = Sales::whereIn('branch_id', $myBranchIDs)
-        ->whereBetween('created_at', [$startDate, $endDate])
+        ->whereBetween('created_at', [
+            Carbon::parse($startDate)->startOfDay(), 
+            Carbon::parse($endDate)->endOfDay()
+        ])
         ->with(['items', 'branch', 'customer', 'user'])
         ->orderBy('created_at', 'DESC');
 

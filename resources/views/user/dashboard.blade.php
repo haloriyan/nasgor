@@ -43,8 +43,8 @@
                 {{ currency_encode($omset) }}
             </div>
         </div>
-        <a href="{{ route('sales') }}" class="flex items-center gap-4 p-4 px-8 bg-green-100 text-green-500 rounded-b-lg">
-            <ion-icon name="cash-outline" class="text-lg"></ion-icon>
+        <a href="{{ route('sales') }}" class="flex items-center gap-4 p-4 px-8 bg-blue-100 text-blue-500 rounded-b-lg">
+            <ion-icon name="bar-chart-outline" class="text-lg"></ion-icon>
             <div class="flex grow text-xs">Omset</div>
             <ion-icon name="arrow-forward-outline" class="text-lg"></ion-icon>
         </a>
@@ -52,24 +52,24 @@
     <div class="flex flex-col border rounded-lg bg-white">
         <div class="p-8">
             <div class="text-xl text-slate-700 font-medium">
-                {{ $volume }}
+                {{ currency_encode($sales->sum('total_margin')) }}
             </div>
         </div>
-        <a href="{{ route('sales') }}" class="flex items-center gap-4 p-4 px-8 bg-blue-100 text-blue-500 rounded-b-lg">
-            <ion-icon name="bar-chart-outline" class="text-lg"></ion-icon>
-            <div class="flex grow text-xs">Transaksi</div>
+        <a href="{{ route('sales') }}" class="flex items-center gap-4 p-4 px-8 bg-green-100 text-green-500 rounded-b-lg">
+            <ion-icon name="cash-outline" class="text-lg"></ion-icon>
+            <div class="flex grow text-xs">Keuntungan</div>
             <ion-icon name="arrow-forward-outline" class="text-lg"></ion-icon>
         </a>
     </div>
     <div class="flex flex-col border rounded-lg bg-white">
         <div class="p-8">
             <div class="text-xl text-slate-700 font-medium">
-                {{ $newCustomersCount }}
+                {{ currency_encode($spending->sum('total_price')) }}
             </div>
         </div>
-        <a href="{{ route('customer') }}" class="flex items-center gap-4 p-4 px-8 bg-purple-100 text-purple-500 rounded-b-lg">
+        <a href="{{ route('purchasing') }}" class="flex items-center gap-4 p-4 px-8 bg-red-100 text-red-500 rounded-b-lg">
             <ion-icon name="people-outline" class="text-lg"></ion-icon>
-            <div class="flex grow text-xs">Pelanggan Baru</div>
+            <div class="flex grow text-xs">Pengeluaran</div>
             <ion-icon name="arrow-forward-outline" class="text-lg"></ion-icon>
         </a>
     </div>
@@ -79,7 +79,7 @@
                 {{ $lowStocks->count() }}
             </div>
         </div>
-        <a href="{{ route('product') }}" class="flex items-center gap-4 p-4 px-8 bg-red-100 text-red-500 rounded-b-lg">
+        <a href="{{ route('product') }}" class="flex items-center gap-4 p-4 px-8 bg-orange-100 text-orange-500 rounded-b-lg">
             <ion-icon name="cube-outline" class="text-lg"></ion-icon>
             <div class="flex grow text-xs">Hampir Habis</div>
             <ion-icon name="arrow-forward-outline" class="text-lg"></ion-icon>

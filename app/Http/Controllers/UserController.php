@@ -157,7 +157,7 @@ class UserController extends Controller
                 return "Unknown range type: $rangeType";
         }
     }
-    public function dashboard(Request $request) {
+    public function dashboard(Request $request, $branchID = null) {
         $me = me();
         $myBranchIDs = [];
         $myBranches = [];
@@ -168,9 +168,16 @@ class UserController extends Controller
 
         foreach ($me->accesses as $access) {
             if (!in_array($access->branch_id, $myBranchIDs)) {
-                array_push($myBranchIDs, $access->branch_id);
-                array_push($myBranches, $access->branch);
+                if ($branchID == null) {
+                    array_push($myBranchIDs, $access->branch_id);
+                    array_push($myBranches, $access->branch);
+                }
             }
+        }
+        if ($branchID != null) {
+            $theBranch = Branch::where('id', $branchID)->first();
+            array_push($myBranches, $theBranch);
+            array_push($myBranchIDs, $branchID);
         }
         $myBranches = collect($myBranches);
 
@@ -252,15 +259,6 @@ class UserController extends Controller
             ['quantity', '>', 0],
         ])->orderBy('quantity', 'ASC')->take(10)->get();
 
-        $newCustomersCount = Customer::whereIn('branch_id', $myBranchIDs)
-        ->whereBetween('created_at', [
-            $ranges[0]['start'],
-            $ranges[count($ranges) - 1]['end'],
-        ])
-        ->get(['id'])->count();
-
-        $newCustomers = Customer::whereIn('branch_id', $myBranchIDs)
-        ->orderBy('created_at', 'DESC')->take(5)->get();
         $sales = Sales::whereIn('branch_id', $myBranchIDs)
         ->where([
             ['status', 'PUBLISHED'],
@@ -272,6 +270,15 @@ class UserController extends Controller
         $reviews = Review::whereIn('branch_id', $myBranchIDs)
         ->with(['customer'])
         ->orderBy('created_at', 'DESC')->take(5)->get();
+        
+        // return $ranges[0]['start'];
+        $spending = Purchasing::whereIn('branch_id', $myBranchIDs)
+        ->where('status', 'RECEIVED')
+        ->whereBetween('created_at', [
+            Carbon::parse($ranges[0]['start'])->startOfDay(),
+            Carbon::parse($ranges[count($ranges) - 1]['end'])->endOfDay()
+        ])
+        ->get();
 
         return view('user.dashboard', [
             'request' => $request,
@@ -279,12 +286,12 @@ class UserController extends Controller
             'volume' => $volume,
             'sales' => $sales,
             'reviews' => $reviews,
-            'newCustomersCount' => $newCustomersCount,
-            'newCustomers' => $newCustomers,
             'omset_chart' => $omsetChart,
             'volume_chart' => $volumeChart,
             'lowStocks' => $lowStocks,
             'myBranches' => $myBranches,
+            'branchID' => $branchID,
+            'spending' => $spending,
         ]);
     }
     public function accessRole() {

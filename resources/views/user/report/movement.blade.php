@@ -72,14 +72,20 @@
                 @foreach ($products as $product)
                     <div class="flex bg-white text-slate-700 text-sm px-4 py-2 rounded shadow-sm min-w-full">
                         <div class="w-56 flex items-center gap-4">
-                            <img 
-                                src="{{ asset('storage/product_images/' . @$product->images[0]->filename) }}"
-                                class="h-12 w-12 rounded-lg object-cover"
-                                alt="{{ $product->name }}"
-                            />
-                            <div class="text-sm text-slate-600">{{ $product->name }}</div>
+                            @if (@$product->images->count() == 0)
+                                <div class="min-w-12 h-12 rounded-lg flex items-center justify-center bg-slate-200">
+                                    <ion-icon name="image-outline"></ion-icon>
+                                </div>
+                            @else
+                                <img 
+                                    src="{{ asset('storage/product_images/' . @$product->images[0]->filename) }}"
+                                    class="h-12 w-12 rounded-lg object-cover"
+                                    alt="{{ $product->name }}"
+                                />
+                            @endif
+                            <div class="text-slate-600">{{ $product->name }}</div>
                         </div>
-                        <div class="w-48 flex items-center">
+                        <div class="w-48 flex items-center ">
                             {{ $product->branch->name }}
                         </div>
                         <div class="w-32 flex items-center">{{ $product->quantity }}</div>

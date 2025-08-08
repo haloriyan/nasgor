@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\SalesController;
 use App\Models\Category;
 use App\Models\Customer;
+use App\Models\Product;
 use App\Models\ProductPrice;
 use App\Models\Sales;
 use App\Models\SalesItem;
@@ -59,11 +60,16 @@ class PosController extends Controller
             'payment_method' => $request->order_type == "OFFLINE" ? $request->payment_method : null,
         ]);
 
+        $totalMargin = 0;
+
         foreach ($items as $item) {
             $price = ProductPrice::where([
                 ['product_id', $item->id],
                 ['value', $item->price]
             ])->first();
+            $product = Product::where('id', $item->id)->first();
+            $margin = $item->price - $product->price;
+            $theTotalMargin = $margin * $item->quantity;
 
             $salesItem = SalesItem::create([
                 'sales_id' => $sales->id,
@@ -74,7 +80,11 @@ class PosController extends Controller
                 'total_price' => $item->price * $item->quantity,
                 'additional_price' => $item->additional_price,
                 'grand_total' => $item->grand_total,
+                'margin' => $margin,
+                'total_margin' => $theTotalMargin,
             ]);
+
+            $totalMargin += $theTotalMargin;
 
             foreach ($item->addons as $addon) {
                 SalesItemAddon::create([
@@ -86,6 +96,11 @@ class PosController extends Controller
                 ]);
             }
         }
+
+        // Update margin
+        Sales::where('id', $sales->id)->update([
+            'total_margin' => $totalMargin,
+        ]);
 
         // Move stock
         $salesController = new SalesController();

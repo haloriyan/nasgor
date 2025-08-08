@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 Route::match(['GET', 'POST'], '/', [UserController::class, 'login'])->name('login');
 Route::match(['GET', 'POST'], 'login', [UserController::class, 'login'])->name('login');
 Route::group(['middleware' => "User"], function () {
-    Route::get('dashboard', [UserController::class, 'dashboard'])->name('dashboard');
+    Route::get('dashboard/{branchID?}', [UserController::class, 'dashboard'])->name('dashboard');
     Route::group(['prefix' => "branch"], function () {
         Route::get('switch/{id}', [UserController::class, 'switchBranch'])->name('branch.switch');
         Route::get('settings', [UserController::class, 'branchSettings'])->name('branch.settings');

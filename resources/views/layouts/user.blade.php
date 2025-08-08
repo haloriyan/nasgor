@@ -73,11 +73,34 @@
         $routeName = Route::currentRouteName();
         $routes = explode(".", $routeName);
     @endphp
-    <a href="{{ route('dashboard') }}" class="flex items-center gap-4 {{ $routeName == 'dashboard' ? 'bg-primary-transparent text-primary' : 'text-slate-500' }}">
+    {{-- <a href="{{ route('dashboard') }}" class="flex items-center gap-4 {{ $routeName == 'dashboard' ? 'bg-primary-transparent text-primary' : 'text-slate-500' }}">
         <div class="h-12 w-1 {{ $routeName == 'dashboard' ? 'bg-primary' : 'bg-white' }}"></div>
         <ion-icon name="home-outline"></ion-icon>
         <div class="text-sm flex">Dashboard</div>
-    </a>
+    </a> --}}
+
+    <div class="group relative">
+        <a href="{{ route('dashboard') }}" class="flex items-center gap-4 text-slate-500 {{ in_array(@$routes[0], ['dashboard']) ? 'bg-primary-transparent text-primary' : '' }}">
+            <div class="h-12 w-1 {{ in_array(@$routes[0], ['dashboard']) ? 'bg-primary' : 'bg-white' }}"></div>
+            <ion-icon name="home-outline" class="{{ in_array(@$routes[0], ['dashboard']) ? 'text-primary' : '' }}"></ion-icon>
+            <div class="text-sm flex grow {{ in_array(@$routes[0], ['dashboard']) ? 'text-primary' : '' }}">Dashboard</div>
+            <ion-icon name="chevron-down-outline" class="me-4"></ion-icon>
+        </a>
+        <div class="{{ in_array(@$routes[0], ['dashboard']) ? 'flex' : 'hidden' }} group-hover:flex flex-col mt-2 mb-2">
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-4 text-slate-500">
+                <div class="h-10 w-1 bg-white"></div>
+                <ion-icon name="ellipse-outline" class="text-[8px] {{ (@$routes[0] == 'dashboard' && @$branchID == null) ? 'text-primary' : '' }}"></ion-icon>
+                <div class="text-sm flex grow {{ (@$routes[0] == 'dashboard' && @$branchID == null) ? 'text-primary' : '' }}">Semua Cabang</div>
+            </a>
+            @foreach ($me->accesses as $access)
+                <a href="{{ route('dashboard', $access->branch_id) }}" class="flex items-center gap-4 text-slate-500">
+                    <div class="h-10 w-1 bg-white"></div>
+                    <ion-icon name="ellipse-outline" class="text-[8px] {{ @$branchID == $access->branch_id ? 'text-primary' : '' }}"></ion-icon>
+                    <div class="text-sm flex grow {{ @$branchID == $access->branch_id ? 'text-primary' : '' }}">{{ $access->branch->name }}</div>
+                </a>
+            @endforeach
+        </div>
+    </div>
 
     <div class="group relative">
         <a href="#" class="flex items-center gap-4 text-slate-500 {{ in_array(@$routes[0], ['product', 'inventory']) ? 'bg-primary-transparent text-primary' : '' }}">

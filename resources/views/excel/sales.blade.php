@@ -1,7 +1,7 @@
 <table>
     <thead>
         <tr>
-            <th colspan="12" style="text-align: center; font-size: 24px; font-weight: medium;">SALES REPORT</th>
+            <th colspan="10" style="text-align: center; font-size: 24px; font-weight: medium;">SALES REPORT</th>
         </tr>
         <tr>
             <th style="font-weight: bold; background-color: #eeeeee; color: #333;">Tanggal</th>

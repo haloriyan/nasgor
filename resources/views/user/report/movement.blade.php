@@ -16,39 +16,42 @@
 <input type="hidden" id="endDate" value="{{ $endDate }}">
 
 <div class="p-8 mobile:p-4 flex flex-col gap-8">
-    {{-- <div class="bg-white rounded-lg p-2 flex items-center gap-4 px-4">
-        <div class="flex flex-col grow pt-1">
-            <div class="text-xs text-slate-500">Rentang Tanggal</div>
-            <input type="text" id="dateRangePicker" class="h-10 outline-0 text-sm text-slate-600 w-full">
-        </div>
-        <button class="bg-green-500 text-xs text-white font-medium p-3 px-4 rounded-lg" onclick="addFilter({download: 1})">
-            Download Excel
-        </button>
-    </div> --}}
 
     <div class="bg-white rounded-lg p-4">
-        <div class="py-2 flex mobile:flex-col items-end gap-4">
-            <div class="flex flex-col border rounded-lg p-2 w-4/12 mobile:w-full">
+        <div class="py-2 flex mobile:flex-col items-center gap-4">
+            <div class="flex flex-col border rounded-lg p-2 grow mobile:w-full">
+                <div class="text-xs text-slate-500">Cari Produk</div>
+                <form class="flex items-center gap-4" onsubmit="searchProduct(event)">
+                    <button class="flex items-center">
+                        <ion-icon name="search-outline" class="text-lg text-slate-700"></ion-icon>
+                    </button>
+                    <input type="text" id="q" name="q" class="h-8 outline-0 text-xs text-slate-600 w-full" value="{{ $request->q }}">
+                    @if ($request->q != "")
+                        <div class="flex items-center cursor-pointer" onclick="addFilter({q: null})">
+                            <ion-icon name="close-outline" class="text-red-500 text-lg"></ion-icon>
+                        </div>
+                    @endif
+                </form>
+            </div>
+            <div class="flex flex-col border rounded-lg p-2 w-3/12 mobile:w-full">
                 <div class="text-xs text-slate-500">Cabang</div>
-                <select class="w-full cursor-pointer h-10 text-sm text-slate-600 outline-0" onchange="addFilter({branch_id: this.value})">
+                <select class="w-full cursor-pointer h-8 text-xs text-slate-600 outline-0" onchange="addFilter({branch_id: this.value})">
                     <option value="">Semua Cabang</option>
                     @foreach ($branches as $branch)
                         <option value="{{ $branch->id }}" {{ $request->branch_id == $branch->id ? "selected='selected'" : "" }}>{{ $branch->name }}</option>
                     @endforeach
                 </select>
             </div>
-            <div class="flex flex-col border rounded-lg p-2 w-4/12 mobile:w-full">
+            <div class="flex flex-col border rounded-lg p-2 w-3/12 mobile:w-full">
                 <div class="text-xs text-slate-500">Rentang Tanggal</div>
                 <div class="flex items-center">
-                    <input type="text" id="dateRangePicker" class="h-10 outline-0 text-sm text-slate-600 w-full">
+                    <input type="text" id="dateRangePicker" class="h-8 outline-0 text-xs text-slate-600 w-full">
                     <ion-icon name="chevron-down-outline"></ion-icon>
                 </div>
             </div>
-            <div class="flex items-center w-4/12 mobile:w-full justify-end">
-                <button class="bg-green-500 text-sm text-white font-medium h-12 rounded-lg px-8" onclick="addFilter({download: 1})">
-                    Download Excel
-                </button>
-            </div>
+            <button class="h-12 w-12 flex items-center justify-center rounded-lg bg-green-500 text-white" onclick="addFilter({download: 1})">
+                <ion-icon name="download-outline" class="text-2xl"></ion-icon>
+            </button>
         </div>
         <!-- Outer scroll container -->
         <div class="overflow-x-auto mt-2">
@@ -105,6 +108,10 @@
                 @endforeach
             </div>
         </div>
+
+        <div class="mt-4">
+            {{ $productsRaw->links() }}
+        </div>
     </div>
 </div>
 
@@ -135,5 +142,11 @@
             }
         }
     });
+
+    const searchProduct = event => {
+        event.preventDefault();
+        let q = select("#q").value;
+        addFilter({q});
+    }
 </script>
 @endsection

@@ -49,6 +49,9 @@
                 <ion-icon name="chevron-down-outline" class="text-slate-700"></ion-icon>
             </div>
         </div>
+        <button class="h-12 w-12 flex items-center justify-center rounded-lg bg-green-500 text-white" onclick="addFilter({download: 1})">
+            <ion-icon name="download-outline" class="text-2xl"></ion-icon>
+        </button>
     </div>
     <div class="bg-white rounded-lg shadow- shadow-slate-200 p-8">
         <div id="MovementChart" class="w-full h-[300px] mb-8"></div>

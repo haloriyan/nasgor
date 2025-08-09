@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\MovementDetailExport;
+use App\Exports\MovementExport;
 use App\Exports\PurchasingExport;
 use App\Exports\SalesExport;
 use App\Models\Product;
@@ -19,6 +21,7 @@ class ReportController extends Controller
     public function purchasingReport(Request $request) {
         $me = me();
         $myBranchIDs = [];
+        $myBranches = [];
         $startDate = $request->start_date ?? Carbon::now()->subDays(7)->format('Y-m-d');
         $endDate = $request->end_date ?? Carbon::now()->format('Y-m-d');
 
@@ -27,11 +30,21 @@ class ReportController extends Controller
         foreach ($me->accesses as $access) {
             if (!in_array($access->branch_id, $myBranchIDs)) {
                 array_push($myBranchIDs, $access->branch_id);
+                array_push($myBranches, $access->branch);
             }
         }
 
-        $purch = Purchasing::whereIn('branch_id', $myBranchIDs)
-        ->whereBetween('created_at', [
+        $purch = new Purchasing();
+        if ($request->branch_id != "") {
+            $purch = $purch->where('branch_id', $request->branch_id);
+        } else {
+            $purch = $purch->whereIn('branch_id', $myBranchIDs);
+        }
+        if ($request->q != "") {
+            $purch = $purch->where('label', 'LIKE', '%'.$request->q.'%');
+        }
+        
+        $purch = $purch->whereBetween('created_at', [
             Carbon::parse($startDate)->startOfDay(),
             Carbon::parse($endDate)->endOfDay()
         ])
@@ -60,11 +73,14 @@ class ReportController extends Controller
             'startDate' => $startDate,
             'endDate' => $endDate,
             'purchasings' => $purchasings,
+            'request' => $request,
+            'branches' => $myBranches,
         ]);
     }
     public function salesReport(Request $request) {
         $me = me();
         $myBranchIDs = [];
+        $myBranches = [];
         $startDate = $request->start_date ?? Carbon::now()->subDays(7)->format('Y-m-d');
         $endDate = $request->end_date ?? Carbon::now()->format('Y-m-d');
 
@@ -73,11 +89,21 @@ class ReportController extends Controller
         foreach ($me->accesses as $access) {
             if (!in_array($access->branch_id, $myBranchIDs)) {
                 array_push($myBranchIDs, $access->branch_id);
+                array_push($myBranches, $access->branch);
             }
         }
 
-        $sale = Sales::whereIn('branch_id', $myBranchIDs)
-        ->whereBetween('created_at', [
+        $sl = new Sales();
+        if ($request->branch_id != "") {
+            $sl = $sl->where('branch_id', $request->branch_id);
+        } else {
+            $sl = $sl->whereIn('branch_id', $myBranchIDs);
+        }
+        if ($request->q != "") {
+            $sl = $sl->where('invoice_number', 'LIKE', '%'.$request->q.'%');
+        }
+
+        $sale = $sl->whereBetween('created_at', [
             Carbon::parse($startDate)->startOfDay(), 
             Carbon::parse($endDate)->endOfDay()
         ])
@@ -106,6 +132,8 @@ class ReportController extends Controller
             'startDate' => $startDate,
             'endDate' => $endDate,
             'sales' => $sales,
+            'request' => $request,
+            'branches' => $myBranches,
         ]);
     }
     public function stockMovement(Request $request, $me = null) {
@@ -116,6 +144,7 @@ class ReportController extends Controller
         $myBranches = [];
         $startDate = $request->start_date ?? Carbon::now()->subDays(7)->format('Y-m-d');
         $endDate = $request->end_date ?? Carbon::now()->format('Y-m-d');
+        $isDownloading = $request->download == 1;
 
         foreach ($me->accesses as $access) {
             if (!in_array($access->branch_id, $myBranchIDs)) {
@@ -125,6 +154,9 @@ class ReportController extends Controller
         }
 
         $query = new Product();
+        if ($request->q != "") {
+            $query = $query->where('name', 'LIKE', '%'.$request->q.'%');
+        }
         $productsRaw = null;
         if ($request->branch_id != null && $request->branch_id != "null") {
             $productsRaw = $query->where('branch_id', $request->branch_id);
@@ -132,9 +164,16 @@ class ReportController extends Controller
             $productsRaw = $query->whereIn('branch_id', $myBranchIDs);
         }
         $productsRaw = $productsRaw->with(['branch', 'images'])
-        ->orderBy('updated_at', 'DESC')->paginate(25);
+        ->orderBy('updated_at', 'DESC');
 
-        $products = $productsRaw->items();
+        if ($isDownloading) {
+            $productsRaw = $productsRaw->get();
+            $products = $productsRaw;
+        } else {
+            $productsRaw = $productsRaw->paginate(25);
+            $products = $productsRaw->items();
+        }
+
 
         foreach ($products as $p => $product) {
             $movements = [
@@ -154,6 +193,19 @@ class ReportController extends Controller
             $products[$p]->movements = $movements;
         }
 
+        if ($isDownloading) {
+            $filename = "Pergerakan_Stok-Exported_at_" . Carbon::now()->isoFormat('DD-MMM-Y') . ".xlsx";
+
+            return Excel::download(
+                new MovementExport([
+                    'products' => $products,
+                    'startDate' => $startDate,
+                    'endDate' => $endDate,
+                ]),
+                $filename
+            );
+        }
+
         if (in_array('api', $request->route()->middleware())) {
             return [
                 'products' => $products,
@@ -164,6 +216,7 @@ class ReportController extends Controller
                 'startDate' => $startDate,
                 'endDate' => $endDate,
                 'products' => $products,
+                'productsRaw' => $productsRaw,
                 'branches' => $myBranches,
             ]);
         }
@@ -174,6 +227,7 @@ class ReportController extends Controller
         $myBranchIDs = [];
         $startDate = $request->start_date ?? Carbon::now()->subDays(7)->format('Y-m-d');
         $endDate = $request->end_date ?? Carbon::now()->format('Y-m-d H:i:s');
+        $isDownloading = $request->download == 1;
 
         foreach ($me->accesses as $access) {
             if (!in_array($access->branch_id, $myBranchIDs)) {
@@ -184,7 +238,7 @@ class ReportController extends Controller
         
         $myBranches = collect($myBranches);
         $movements = [];
-        $product = Product::where('id', $productID)->first();
+        $product = Product::where('id', $productID)->with(['branch'])->first();
         $quantity = $product->quantity;
             
         $stocks = StockMovementProduct::where('product_id', $product->id)
@@ -224,6 +278,20 @@ class ReportController extends Controller
 
         $movements = array_reverse($movements);
         $product->movements = $movements;
+
+        if ($isDownloading) {
+            $filename = "Detail_Pergerakan_Stok-Exported_at_" . Carbon::now()->isoFormat('DD-MMM-Y HH:mm') . ".xlsx";
+
+            return Excel::download(
+                new MovementDetailExport([
+                    'product' => $product,
+                    'movements' => $movements,
+                    'startDate' => $startDate,
+                    'endDate' => $endDate,
+                ]),
+                $filename
+            );
+        }
 
         $movementSeries = [];
         foreach ($movements as $m => $move) {

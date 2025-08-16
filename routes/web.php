@@ -154,6 +154,8 @@ Route::group(['middleware' => "User"], function () {
     });
     Route::group(['prefix' => "staff"], function () {
         Route::post('store', [UserController::class, 'store'])->name('users.store');
+        Route::post('update', [UserController::class, 'update'])->name('users.update');
+        Route::post('delete', [UserController::class, 'delete'])->name('users.delete');
         Route::get('/', [UserController::class, 'users'])->name('users');
     });
     Route::group(['prefix' => "hak-akses"], function () {

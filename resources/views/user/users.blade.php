@@ -33,7 +33,7 @@
                             {{ $user->name }}
                         </td>
                         <td class="px-6 py-4 text-sm text-slate-700">
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-2">
                                 @foreach ($user->accesses as $item)
                                     <div class="bg-slate-200 p-2 px-3 rounded-lg text-xs text-slate-600">
                                         {{ ucwords($item->role->name) }} di {{ $item->branch->name }}
@@ -43,12 +43,14 @@
                         </td>
                         
                         <td class="px-6 py-4 text-sm text-slate-700 flex gap-2">
-                            <button class="bg-green-500 text-white p-1 px-4 font-medium text-lg">
+                            <button class="bg-green-500 text-white p-1 px-4 font-medium text-lg" onclick="edit('{{ $user }}')">
                                 <ion-icon name="create-outline"></ion-icon>
                             </button>
-                            <button class="bg-red-500 text-white p-1 px-4 font-medium text-lg">
-                                <ion-icon name="trash-outline"></ion-icon>
-                            </button>
+                            @if ($user->id != $me->id)
+                                <button class="bg-red-500 text-white p-1 px-4 font-medium text-lg" onclick="del('{{ $user }}')">
+                                    <ion-icon name="trash-outline"></ion-icon>
+                                </button>
+                            @endif
                         </td>
                     </tr>
                 @endforeach
@@ -111,17 +113,79 @@
     </form>
 </div>
 
+<div class="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-30" id="edit">
+    <form action="{{ route('users.update') }}" class="bg-white shadow-lg rounded-lg p-10 w-4/12 mobile:w-10/12 flex flex-col gap-4 mt-4" method="POST">
+        @csrf
+        <input type="hidden" name="id" id="id">
+        <div class="flex items-center gap-4 mb-4">
+            <h3 class="text-lg text-slate-700 font-medium flex grow">Edit Pengguna</h3>
+            <ion-icon name="close-outline" class="cursor-pointer text-3xl" onclick="toggleHidden('#edit')"></ion-icon>
+        </div>
+
+        <div class="group border focus-within:border-primary rounded-lg p-2 relative">
+            <label class="text-slate-500 group-focus-within:text-primary text-xs absolute top-2 left-2">Nama</label>
+            <input type="text" name="name" id="name" class="w-full h-10 mt-2 outline-none bg-transparent text-sm text-slate-700" required />
+        </div>
+        <div class="group border focus-within:border-primary rounded-lg p-2 relative">
+            <label class="text-slate-500 group-focus-within:text-primary text-xs absolute top-2 left-2">Username</label>
+            <input type="text" name="email" id="email" class="w-full h-10 mt-2 outline-none bg-transparent text-sm text-slate-700" required />
+        </div>
+        <div class="group border focus-within:border-primary rounded-lg p-2 relative">
+            <label class="text-slate-500 group-focus-within:text-primary text-xs absolute top-2 left-2">Ganti Password</label>
+            <input type="password" name="password" id="password" class="w-full h-10 mt-2 outline-none bg-transparent text-sm text-slate-700" />
+        </div>
+        <div class="text-xs text-slate-500">Biarkan kosong jika tidak ingin mengganti password</div>
+
+        <div class="flex items-center justify-end gap-4 mt-4">
+            <button class="p-3 px-6 rounded-lg text-sm bg-slate-200 text-slate-700" type="button" onclick="toggleHidden('#edit')">Batal</button>
+            <button class="p-3 px-6 rounded-lg text-sm bg-primary text-white font-medium">Simpan</button>
+        </div>
+    </form>
+</div>
+
+<div class="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-30" id="delete">
+    <form action="{{ route('users.delete') }}" class="bg-white shadow-lg rounded-lg p-10 w-4/12 mobile:w-10/12 flex flex-col gap-4 mt-4" method="POST">
+        @csrf
+        <input type="hidden" name="id" id="id">
+        <div class="flex items-center gap-4 mb-4">
+            <h3 class="text-lg text-slate-700 font-medium flex grow">Hapus Pengguna</h3>
+            <ion-icon name="close-outline" class="cursor-pointer text-3xl" onclick="toggleHidden('#delete')"></ion-icon>
+        </div>
+        
+        <div class="text-sm text-slate-600">Yakin ingin menghapus <span id="name"></span> ?</div>
+
+        <div class="flex items-center justify-end gap-4 mt-4">
+            <button class="p-3 px-6 rounded-lg text-sm bg-slate-200 text-slate-700" type="button" onclick="toggleHidden('#delete')">Batal</button>
+            <button class="p-3 px-6 rounded-lg text-sm bg-red-500 text-white font-medium">Hapus</button>
+        </div>
+    </form>
+</div>
+
 @endsection
 
 @section('javascript')
 <script>
     const assignRole = (user) => {
-        console.log(user);
         user = JSON.parse(user);
         
         select("#AssignRole #user_name").innerHTML = user.name;
         select("#AssignRole #user_id").value = user.id;
         toggleHidden("#AssignRole");
+    }
+    const edit = (data) => {
+        data = JSON.parse(data);
+        select("#edit #id").value = data.id;
+        select("#edit #name").value = data.name;
+        select("#edit #email").value = data.email;
+
+        toggleHidden("#edit");
+    }
+    const del = (data) => {
+        data = JSON.parse(data);
+        select("#delete #id").value = data.id;
+        select("#delete #name").innerHTML = data.name;
+
+        toggleHidden("#delete");
     }
 </script>
 @endsection

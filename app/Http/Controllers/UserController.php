@@ -518,6 +518,47 @@ class UserController extends Controller
             'message' => "Berhasil menambahkan " . $request->name,
         ]);
     }
+    public function update(Request $request) {
+        $me = me();
+        $data = User::where('id', $request->id);
+        $user = $data->first();
+        $passChanged = false;
+
+        $toUpdate = [
+            'name' => $request->name,
+            'email' => $request->email,
+        ];
+
+        if ($request->password != "") {
+            $passChanged = true;
+            $toUpdate['password'] = bcrypt($request->password);
+        }
+
+        $data->update($toUpdate);
+
+        if ($passChanged && $user->id == $me->id) {
+            Auth::logout();
+
+            return redirect()->route('login')->with([
+                'message' => "Berhasil mengubah password. Mohon login kembali menggunakan password baru"
+            ]);
+        }
+
+        return redirect()->back()->with([
+            'message' => "Berhasil mengubah data " . $user->name,
+        ]);
+    }
+    public function delete(Request $request) {
+        $data = User::where('id', $request->id);
+        $user = $data->first();
+
+        $data->delete();
+
+        return redirect()->back()->with([
+            'message' => "Berhasil menghapus " . $user->name,
+        ]);
+    }
+
     public function branchSettings() {
         return view('user.branch.settings');
     }

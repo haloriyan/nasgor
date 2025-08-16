@@ -72,6 +72,7 @@
                     <div class="w-48">No. Invoice</div>
                     <div class="w-36">Cabang</div>
                     <div class="w-36">Staff</div>
+                    <div class="w-36">Pelanggan</div>
                     <div class="w-40">Produk</div>
                     <div class="w-24">Harga</div>
                     <div class="w-24">Qty</div>
@@ -92,6 +93,7 @@
                 <div class="w-48">{{ $sale->invoice_number }}</div>
                 <div class="w-36">{{ $sale->branch->name }}</div>
                 <div class="w-36">{{ $sale->user->name }}</div>
+                <div class="w-36">{{ $sale->customer->name ?? "-" }}</div>
             @else
                 <div class="w-32"></div>
                 <div class="w-48"></div>

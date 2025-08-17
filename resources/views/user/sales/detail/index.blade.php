@@ -155,11 +155,17 @@
                         <tr>
                             <td class="px-6 py-4 text-sm text-slate-700">
                                 <div class="flex items-start gap-4">
-                                    <img 
-                                        src="{{ asset('storage/product_images/' . @$item->product->images[0]->filename) }}" 
-                                        alt="{{ $item->id }}"
-                                        class="w-16 h-16 rounded-lg object-cover"
-                                    >
+                                    @if ($item->product->images->count() > 0)
+                                        <img 
+                                            src="{{ asset('storage/product_images/' . @$item->product->images[0]->filename) }}" 
+                                            alt="{{ $item->id }}"
+                                            class="w-16 h-16 rounded-lg object-cover"
+                                        >
+                                    @else 
+                                        <div class="flex items-center justify-center rounded-lg w-16 h-16 bg-slate-100">
+                                            <ion-icon name="image-outline" class="text-lg"></ion-icon>
+                                        </div>
+                                    @endif
                                     <div class="flex flex-col gap-2">
                                         <div class="text-sm text-slate-600 font-medium">{{ @$item->product->name }}</div>
                                         <div class="flex flex-col gap-1">

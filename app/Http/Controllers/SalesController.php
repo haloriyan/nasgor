@@ -200,10 +200,13 @@ _".env('APP_NAME')." - {$storeName}_
         ]);
     }
 
-    public function proceed($id) {
-        $me = me();
+    public function proceed($id, $me = null) {
+        if ($me == null) {
+            $me = me();
+        }
         $sale = Sales::where('id', $id);
         $sales = $sale->with(['items.product.ingredients.ingredient'])->first();
+        Log::info($sales);
         $movementItems = [];
 
         foreach ($sales->items as $item) {
@@ -226,6 +229,8 @@ _".env('APP_NAME')." - {$storeName}_
                 ]);
             }
         }
+
+        Log::info($movementItems);
 
         if ($sales->status != "DRAFT") {
             return redirect()->back();
@@ -254,6 +259,8 @@ _".env('APP_NAME')." - {$storeName}_
         $sale->update([
             'status' => "PUBLISHED"
         ]);
+
+        Log::info('DONE');
 
         return redirect()->route('sales.detail', $id);
     }

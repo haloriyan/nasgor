@@ -51,7 +51,7 @@ class PosController extends Controller
             'branch_id' => $me->access->branch_id,
             'customer_id' => $request->customer_id,
             'invoice_number' => "INV_".date('YmdHis'),
-            'status' => "PUBLISHED",
+            'status' => "DRAFT",
             'payment_status' => "PAID",
             'total_price' => $totalPrice,
             'total_quantity' => $totalQuantity,
@@ -104,7 +104,7 @@ class PosController extends Controller
 
         // Move stock
         $salesController = new SalesController();
-        $salesController->proceed($sales->id);
+        $salesController->proceed($sales->id, $me);
 
         $sales = Sales::where('id', $sales->id)
         ->with(['items', 'items.product.images', 'items.addons.addon', 'customer', 'review', 'branch', 'user'])

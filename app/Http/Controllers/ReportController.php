@@ -55,7 +55,7 @@ class ReportController extends Controller
         if ($isDownloading) {
             $purchasings = $purch->get();
         } else {
-            $purchasings = $purch->paginate(50);
+            $purchasings = $purch->paginate(25)->withQueryString();
         }
 
         if ($isDownloading) {
@@ -114,7 +114,7 @@ class ReportController extends Controller
         if ($isDownloading) {
             $sales = $sale->get();
         } else {
-            $sales = $sale->paginate(50);
+            $sales = $sale->paginate(25)->withQueryString();
         }
 
         if ($isDownloading) {
@@ -170,7 +170,7 @@ class ReportController extends Controller
             $productsRaw = $productsRaw->get();
             $products = $productsRaw;
         } else {
-            $productsRaw = $productsRaw->paginate(25);
+            $productsRaw = $productsRaw->paginate(25)->withQueryString();
             $products = $productsRaw->items();
         }
 

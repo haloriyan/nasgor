@@ -244,7 +244,7 @@
         fetchUrl: '/api/product/search?branch_id={{ $product->branch_id }}&q=',
         name: "ingredient_id",
         label: "Produk",
-        single: true,
+        // single: true,
         parseResponse: (data) => data.products // if the response is { categories: [...] }
     });
 </script>

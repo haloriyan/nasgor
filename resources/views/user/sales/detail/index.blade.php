@@ -251,7 +251,9 @@
         select("#ProductSelectorWrapper").classList.add('hidden');
         select("#ProductDetailWrapper").classList.remove('hidden');
         select("#AddProduct #product_id").value = prod.id;
-        select("#AddProduct #ProductImage").setAttribute('src', `/storage/product_images/${prod.images[0].filename}`);
+        if (prod.images.length > 0) {
+            select("#AddProduct #ProductImage").setAttribute('src', `/storage/product_images/${prod.images[0].filename}`);
+        }
         select("#AddProduct #ProductName").innerHTML = prod.name;
 
         // Render Add Ons

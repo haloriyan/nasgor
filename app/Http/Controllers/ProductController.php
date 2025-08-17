@@ -24,11 +24,8 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 class ProductController extends Controller
 {
     public function bulkImport($file, $me) {
-        Log::info('bulk import');
-
         $spreadsheet = IOFactory::load($file->getRealPath());
         $sheetNames = $spreadsheet->getSheetNames();
-        Log::info('Sheet names: ' . json_encode($sheetNames));
 
         Excel::import(
             new ProductImport($sheetNames, $me),
@@ -219,11 +216,14 @@ class ProductController extends Controller
         ]);
     }
     public function storeIngredient($id, Request $request) {
-        $ingredient = ProductIngredient::create([
-            'product_id' => $id,
-            'ingredient_id' => json_decode($request->ingredient_id)[0],
-            'quantity' => $request->quantity,
-        ]);
+        $ingredientIDs = json_decode($request->ingredient_id);
+        foreach ($ingredientIDs as $ingredientID) {
+            $ingredient = ProductIngredient::create([
+                'product_id' => $id,
+                'ingredient_id' => $ingredientID,
+                'quantity' => $request->quantity,
+            ]);
+        }
 
         return redirect()->route('product.detail', $id)->with([
             'message' => "Berhasil menambahkan bumbu "

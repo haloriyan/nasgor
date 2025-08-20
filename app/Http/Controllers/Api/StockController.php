@@ -10,6 +10,7 @@ use App\Models\StockMovement;
 use App\Models\StockMovementProduct;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class StockController extends Controller
 {
@@ -73,6 +74,7 @@ class StockController extends Controller
 
     public function movementReport(Request $request) {
         $user = me($request->user('user'));
+
         $reportController = new ReportController();
         $data = $reportController->stockMovement($request, $user);
 
@@ -83,8 +85,10 @@ class StockController extends Controller
     public function movementDetail($productID, Request $request) {
         $me = me($request->user('user'));
 
-        $startDate = $request->start_date ?? Carbon::now()->subDays(7)->format('Y-m-d');
-        $endDate = $request->end_date ?? Carbon::now()->format('Y-m-d H:i:s');
+        $startDate = $request->start_date ?? Carbon::now()->subDays(7);
+        $endDate = $request->end_date ?? Carbon::now();
+        $startDate = Carbon::parse($startDate)->startOfDay()->format('Y-m-d H:i:s');
+        $startDate = Carbon::parse($endDate)->startOfDay()->format('Y-m-d H:i:s');
 
         $product = Product::where('id', $productID)->firstOrFail();
         $quantity = $product->quantity;

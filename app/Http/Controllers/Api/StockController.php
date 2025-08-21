@@ -88,7 +88,7 @@ class StockController extends Controller
         $startDate = $request->start_date ?? Carbon::now()->subDays(7);
         $endDate = $request->end_date ?? Carbon::now();
         $startDate = Carbon::parse($startDate)->startOfDay()->format('Y-m-d H:i:s');
-        $startDate = Carbon::parse($endDate)->startOfDay()->format('Y-m-d H:i:s');
+        $endDate = Carbon::parse($endDate)->endOfDay()->format('Y-m-d H:i:s');
 
         $product = Product::where('id', $productID)->firstOrFail();
         $quantity = $product->quantity;

@@ -20,16 +20,16 @@
 <input type="hidden" id="endDate" value="{{ $endDate }}">
 
 <div class="p-8 flex flex-col gap-8">
-    <div class="flex items-center gap-12 bg-white rounded-lg shadow shadow-slate-200 p-8">
+    <div class="flex items-center gap-12 mobile:gap-6 bg-white rounded-lg shadow shadow-slate-200 p-8 mobile:p-4">
         <a href="{{ route('movement_report') }}" class="flex items-center">
             <ion-icon name="arrow-back-outline" class="text-lg text-slate-600"></ion-icon>
         </a>
         <div class="flex flex-col gap-1">
             <div class="text-xs text-slate-500 font-medium flex items-center gap-2">
                 <ion-icon name="cube-outline"></ion-icon>
-                Pergerakan Stok
+                <div class="mobile:hidden">Pergerakan Stok</div>
             </div>
-            <h2 class="text-lg text-slate-700">
+            <h2 class="text-lg mobile:text-sm text-slate-700">
                 {{ $product->name }}
             </h2>
         </div>
@@ -38,11 +38,11 @@
                 <ion-icon name="storefront-outline"></ion-icon>
                 Cabang
             </div>
-            <h2 class="text-lg text-slate-700">
+            <h2 class="text-lg mobile:text-sm text-slate-700">
                 {{ $product->branch->name }}
             </h2>
         </div>
-        <div class="flex flex-col w-3/12">
+        <div class="flex flex-col w-3/12 mobile:hidden">
             <div class="text-xs text-slate-500">Rentang Tanggal</div>
             <div class="flex items-center">
                 <input type="text" id="dateRangePicker" class="h-10 outline-0 text-sm text-slate-600 w-full">
@@ -53,6 +53,15 @@
             <ion-icon name="download-outline" class="text-2xl"></ion-icon>
         </button>
     </div>
+
+    <div class="desktop:hidden p-4 bg-white rounded-lg shadow">
+        <div class="text-xs text-slate-500">Rentang Tanggal</div>
+        <div class="flex items-center">
+            <input type="text" id="dateRangePicker" class="h-10 outline-0 text-sm text-slate-600 w-full">
+            <ion-icon name="chevron-down-outline" class="text-slate-700"></ion-icon>
+        </div>
+    </div>
+
     <div class="bg-white rounded-lg shadow- shadow-slate-200 p-8">
         <div id="MovementChart" class="w-full h-[300px] mb-8"></div>
 
@@ -157,10 +166,12 @@
         onChange: selectedDates => {
             if (selectedDates.length === 2) {
                 const [start, end] = selectedDates;
-                addFilter({
+                let filter = {
                     start_date: dayjs(start).format('YYYY-MM-DD'),
                     end_date: dayjs(end).format('YYYY-MM-DD'),
-                });
+                };
+                console.log(filter);
+                addFilter(filter);
             }
         }
     });

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AddOn;
+use App\Models\Product;
 use App\Models\ProductPrice;
 use App\Models\Sales;
 use App\Models\SalesItem;
@@ -286,16 +287,27 @@ _".env('APP_NAME')." - {$storeName}_
             'message' => $message,
         ]);
     }
-    public function void($id, Request $request, $returnValue = false) {
+    public function void($id, Request $request) {
         $data = Sales::where('id', $id);
+        $sales = $data->first();
+
         $data->update([
             'status' => "VOID"
         ]);
 
-        if ($returnValue) {
-            return $data->first();
-        } else {
-            return redirect()->back();
+        $restock = $request->restock;
+
+        if ($restock) {
+            $move = StockMovement::where('sales_id', $sales->id);
+            $movement = $move->with(['items'])->first();
+
+            foreach ($movement->items as $item) {
+                Product::where('id', $item->product_id)->increment('quantity', $item->quantity);
+            }
+            
+            $move->delete();
         }
+
+        return $sales;
     }
 }

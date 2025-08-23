@@ -193,20 +193,12 @@ class ReportController extends Controller
             ->whereBetween('created_at', [$startDate, $endDate])
             ->with(['movement'])->get();
 
-            Log::info($stocks->count());
-
-            // Log::info($product->name);
-            // Log::info("======");
-            // Log::info($stocks);
-
             foreach ($stocks as $stock) {
                 $movements[$stock->movement->type] += $stock->quantity;
             }
 
             $products[$p]->movements = $movements;
         }
-
-        // return $products;
 
         if ($isDownloading) {
             $filename = "Pergerakan_Stok-Exported_at_" . Carbon::now()->isoFormat('DD-MMM-Y') . ".xlsx";

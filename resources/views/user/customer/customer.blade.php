@@ -20,7 +20,7 @@
 
             <div class="flex items-center gap-2 mt-4">
                 <ion-icon name="call-outline" class="text-slate-500"></ion-icon>
-                <div class="text-slate-700 text-sm">{{ $customer->phone }}</div>
+                <div class="text-slate-700 text-sm">{{ sanitizeWhatsapp($customer->phone) }}</div>
             </div>
             <div class="flex items-center gap-2 mt-2">
                 <ion-icon name="mail-outline" class="text-slate-500"></ion-icon>
@@ -52,7 +52,7 @@
                     <tr>
                         <td class="px-6 py-4 text-sm text-slate-700">{{ $customer->name }}</td>
                         <td class="px-6 py-4 text-sm text-slate-700">{{ $customer->email }}</td>
-                        <td class="px-6 py-4 text-sm text-slate-700">{{ $customer->phone }}</td>
+                        <td class="px-6 py-4 text-sm text-slate-700">{{ sanitizeWhatsapp($customer->phone) }}</td>
                         <td class="px-6 py-4 text-sm text-slate-700 flex items-center gap-2">
                             @foreach ($customer->types as $type)
                                 <div class="p-1 px-3 rounded-full text-xs text-white font-medium" style="background-color: {{ $type->color }}">

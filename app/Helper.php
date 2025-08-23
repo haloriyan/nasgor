@@ -71,6 +71,31 @@ function initial($name) {
     return strtoupper($toReturn);
 }
 
+function sanitizeWhatsapp($number, $returnPrefix = "0") {
+    // Remove spaces, dashes, and other non-numeric except +
+    $number = preg_replace('/[^\d+]/', '', $number);
+
+    // If starts with +62, remove it
+    if (strpos($number, '+62') === 0) {
+        $number = substr($number, 3);
+    }
+    // If starts with 62 (without +), remove it
+    elseif (strpos($number, '62') === 0) {
+        $number = substr($number, 2);
+    }
+    // If starts with 0, remove it
+    elseif (strpos($number, '0') === 0) {
+        $number = substr($number, 1);
+    }
+
+    if ($number !== "") {
+        $number = $returnPrefix.$number;
+    }
+
+    return $number;
+}
+
+
 function generateDateRangeIndexes($rangeType) {
     $format = 'Y-m-d';
     $now = Carbon::now();

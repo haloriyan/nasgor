@@ -194,11 +194,12 @@ class ReportController extends Controller
             ->with(['movement'])->get();
 
             foreach ($stocks as $stock) {
-                $movements[$stock->movement->type] = $stock->quantity;
+                $movements[$stock->movement->type] += $stock->quantity;
             }
 
             $products[$p]->movements = $movements;
         }
+
 
         if ($isDownloading) {
             $filename = "Pergerakan_Stok-Exported_at_" . Carbon::now()->isoFormat('DD-MMM-Y') . ".xlsx";

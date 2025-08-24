@@ -138,8 +138,6 @@
         </table>
     </div>
 
-    {{ json_encode($movements) }}
-
     <div class="grid grid-cols-2 mobile:grid-cols-1 gap-8">
         <div class="bg-white rounded-lg shadow- shadow-slate-200 p-8">
             <div id="InboundChart" class="w-full h-[250px]"></div>

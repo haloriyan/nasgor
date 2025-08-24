@@ -87,6 +87,16 @@
             </thead>
             <tbody>
                 @foreach ($movements as $m => $movement)
+                    @php
+                        // $stokLama = @$movements[$m - 1]['quantity'] + $movement['movement_amount'];
+                        $stokLama = $movement['quantity'];
+                        $stokBaru = 0;
+                        if ($movement['type'] == "inbound") {
+                            $stokBaru = $stokLama + $movement['quantity'];
+                        } else if ($movement['type'] == "outbound") {
+                            $stokBaru = $stokLama - $movement['movement_amount'];
+                        }
+                    @endphp
                     <tr>
                         <td class="p-2 text-sm">
                             {{ Carbon::parse($movement['date'])->isoFormat('DD MMMM YYYY, HH:mm:ss') }}
@@ -105,19 +115,30 @@
                             </div>
                         </td>
                         <td class="p-2 text-sm">
+                            {{ $stokLama }}
+                        </td>
+                        <td class="p-2 text-sm">
+                            {{ @$movement['movement_amount'] }}
+                        </td>
+                        <td class="p-2 text-sm">
+                            {{ $stokBaru }}
+                        </td>
+                        {{-- <td class="p-2 text-sm">
                             {{ @$movements[$m - 1]['quantity'] }}
                         </td>
                         <td class="p-2 text-sm">
                             {{ @$movements[$m - 1]['movement_amount'] }}
                         </td>
                         <td class="p-2 text-sm">
-                            {{ $movement['quantity'] }}
-                        </td>
+                            {{ (@$movements[$m - 1]['quantity'] - @$movements[$m - 1]['movement_amount']) }}
+                        </td> --}}
                     </tr>
                 @endforeach
             </tbody>
         </table>
     </div>
+
+    {{ json_encode($movements) }}
 
     <div class="grid grid-cols-2 mobile:grid-cols-1 gap-8">
         <div class="bg-white rounded-lg shadow- shadow-slate-200 p-8">

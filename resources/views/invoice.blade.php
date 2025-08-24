@@ -40,11 +40,15 @@
         </div>
         <div class="flex flex-col gap-1">
             <div class="text-xs text-slate-400">Ditagihkan kepada</div>
-            <div class="text-slate-700 font-medium mt-1">
-                {{ $customer->name }}
-            </div>
-            @if ($customer->phone != null)
-                <div class="text-xs text-slate-500">{{ $customer->phone }}</div>
+            @if ($customer == null)
+                <div class="text-slate-600 text-lg">-</div>
+            @else
+                <div class="text-slate-700 font-medium mt-1">
+                    {{ $customer->name }}
+                </div>
+                @if ($customer->phone != null)
+                    <div class="text-xs text-slate-500">{{ $customer->phone }}</div>
+                @endif
             @endif
         </div>
     </div>
@@ -74,11 +78,18 @@
                         <tr>
                             <td class="py-4 text-sm text-slate-700">
                                 <div class="flex items-start gap-4">
-                                    <img 
-                                        src="{{ asset('storage/product_images/' . $item->product->images[0]->filename) }}" 
-                                        alt="{{ $item->id }}"
-                                        class="w-16 h-16 rounded-lg object-cover mobile:hidden"
-                                    >
+                                    @if ($item->product->images->count() == 0)
+                                        <div class="w-16 h-16 rounded-lg flex items-center justify-center bg-slate-100">
+                                            <ion-icon name="image-outline" class="text-xl"></ion-icon>
+                                        </div>
+                                    @else
+                                        <img 
+                                            src="{{ asset('storage/product_images/' . $item->product->images[0]->filename) }}" 
+                                            alt="{{ $item->id }}"
+                                            class="w-16 h-16 rounded-lg object-cover mobile:hidden"
+                                        >
+                                    @endif
+                                    
                                     <div class="flex flex-col gap-2">
                                         <div class="text-sm text-slate-600 font-medium">{{ $item->product->name }}</div>
                                         <div class="flex flex-col gap-1">
@@ -118,7 +129,7 @@
     </div>
 </div>
 
-@if ($sales->review == null)
+@if ($sales->review == null && $sales->customer_id != null)
     <div class="bg-white rounded-lg mt-4 mobile:m-4 border">
         <form action="{{ route('invoice.review', $sales->invoice_number) }}" method="POST" class="flex flex-col gap-4 p-8  border-b" id="WriteReview">
             @csrf

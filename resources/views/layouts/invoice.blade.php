@@ -38,6 +38,8 @@
     </div>
 </div>
 
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 <script>
     const select = dom => document.querySelector(dom);
     const selectAll = dom => document.querySelectorAll(dom);

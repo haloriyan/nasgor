@@ -10,6 +10,7 @@ use App\Models\Purchasing;
 use App\Models\Review;
 use App\Models\Sales;
 use App\Models\StockMovement;
+use App\Models\StockRequest;
 use App\Models\Supplier;
 use App\Models\User;
 use Carbon\Carbon;
@@ -252,6 +253,29 @@ class UserController extends Controller
 
         return response()->json([
             'opnames' => $opnames,
+        ]);
+    }
+
+    public function minta(Request $request) {
+        $user = me($request->user('user'));
+        $branches = Branch::where('id', '!=', $user->access->branch_id)
+        ->orderBy('name', 'ASC')->get();
+
+        $myRequests = StockRequest::where([
+            ['is_accepted', null],
+            ['seeker_branch_id', $user->access->branch_id],
+        ])
+        ->with(['product.images', 'seeker_branch', 'seeker_user', 'provider_branch', 'provider_user'])->get();
+        $incomingRequests = StockRequest::where([
+            ['is_accepted', null],
+            ['provider_branch_id', $user->access->branch_id],
+        ])
+        ->with(['product.images', 'seeker_branch', 'seeker_user', 'provider_branch', 'provider_user'])->get();
+
+        return response()->json([
+            'branches' => $branches,
+            'incoming_requests' => $incomingRequests,
+            'my_requests' => $myRequests,
         ]);
     }
 }

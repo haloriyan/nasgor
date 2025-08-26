@@ -117,7 +117,7 @@ class InventoryController extends Controller
             'inventory' => $inventory,
         ]);
     }
-    public function proceed($id, $redirect = true) {
+    public function proceed($id, $redirect = true, $me = null) {
         $inv = StockMovement::where('id', $id);
         $inventory = $inv->with(['branch', 'items.product'])->first();
 
@@ -143,7 +143,9 @@ class InventoryController extends Controller
         $message = "Berhasil mempublikasikan pergerakan stok";
 
         if ($inventory->type == "outbound" && $inventory->branch_id_destination != null) {
-            $me = me();
+            if ($me == null) {
+                $me = me();
+            }
             $targetInventory = StockMovement::create([
                 'branch_id' => $inventory->branch_id_destination,
                 'user_id' => $me->id,
@@ -151,12 +153,14 @@ class InventoryController extends Controller
                 'type' => "inbound",
                 'label' => "IN".date('YmdHis'),
                 'notes' => "Penerimaan dari cabang " . $inventory->branch->name,
-                'status' => "DRAFT"
+                'status' => "PUBLISH"
             ]);
+            $targetTotalQuantity = 0;
+            $targetTotalPrice = 0;
 
             foreach ($inventory->items as $item) {
                 $product = Product::where([
-                    ['id', $item->product_id],
+                    ['name', 'LIKE', "%".$item->product->name."%"],
                     ['branch_id', $inventory->branch_id_destination],
                 ])->first();
 
@@ -167,7 +171,7 @@ class InventoryController extends Controller
                         'slug' => $item->product->slug,
                         'description' => $item->product->description,
                         'price' => $item->product->price,
-                        'quantity' => 0,
+                        'quantity' => $item->quantity,
                     ]);
 
                     foreach ($item->product->images as $image) {
@@ -191,16 +195,26 @@ class InventoryController extends Controller
                             'category_id' => $category->id,
                         ]);
                     }
+                } else {
+                    $product->increment('quantity', $item->quantity);
                 }
                 
-                $item = StockMovementProduct::create([
+                StockMovementProduct::create([
                     'movement_id' => $targetInventory->id,
                     'product_id' => $product->id,
                     'price' => $item->price,
                     'quantity' => $item->quantity,
                     'total_price' => $item->total_price,
                 ]);
+
+                $targetTotalQuantity += $item->quantity;
+                $targetTotalPrice += $item->total_price;
             }
+
+            $targetInventory->update([
+                'total_quantity' => $targetTotalQuantity,
+                'total_price' => $targetTotalPrice,
+            ]);
 
             $message .= " dan mencatat stok masuk di cabang " . $inventory->branch_destination->name;
         }

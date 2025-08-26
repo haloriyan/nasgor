@@ -87,3 +87,11 @@ Route::group(['prefix' => "movement"], function () {
     Route::get('{productID}', [StockController::class, 'movementDetail']);
     Route::get('/', [StockController::class, 'movementReport']);
 });
+
+Route::group(['prefix' => "minta"], function () {
+    Route::post('store', [StockController::class, 'stockRequestStore']);
+
+    Route::get('{requestID}/reject', [StockController::class, 'stockRequestReject']);
+    Route::post('accept', [StockController::class, 'stockRequestAccept']);
+    Route::get('/', [UserController::class, 'minta']);
+});

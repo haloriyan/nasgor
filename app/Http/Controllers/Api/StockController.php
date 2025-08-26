@@ -8,6 +8,7 @@ use App\Http\Controllers\ReportController;
 use App\Models\Product;
 use App\Models\StockMovement;
 use App\Models\StockMovementProduct;
+use App\Models\StockRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -163,5 +164,115 @@ class StockController extends Controller
             'startDate' => $startDate,
             'endDate' => $endDate,
         ]);
+    }
+    public function stockRequestStore(Request $request) {
+        $user = me($request->user('user'));
+        $items = $request->items;
+        $branch = $request->branch;
+        foreach ($items as $item) {
+            $totalPrice = $item['quantity'] * $item['price'];
+            $ch = StockRequest::where([
+                ['is_accepted', false],
+                ['product_id', $item['id']],
+                ['seeker_branch_id', $user->access->branch_id],
+                ['provider_branch_id', $branch['id']]
+            ]);
+            $check = $ch->first();
+
+            if ($check == null) {
+                StockRequest::create([
+                    'seeker_branch_id' => $user->access->branch_id,
+                    'seeker_user_id' => $user->id,
+                    'provider_branch_id' => $branch['id'],
+                    'provider_user_id' => null,
+
+                    'product_id' => $item['id'],
+                    'quantity' => $item['quantity'],
+                    'total_price' => $totalPrice,
+                    'accepted_quantity' => $item['quantity'],
+                    'accepted_total_price' => $totalPrice,
+                    'is_accepted' => null,
+                ]);
+            } else {
+                $newQuantity = $check->quantity + $item['quantity'];
+                $newTotalPrice = $item['price'] * $newQuantity;
+                $ch->update([
+                    'quantity' => $newQuantity,
+                    'total_price' => $newTotalPrice,
+                ]);
+            }
+        }
+
+        return response()->json(['ok']);
+    }
+    public function stockRequestReject($requestID, Request $request) {
+        $data = StockRequest::where('id', $requestID);
+        $stock = $data->first();
+
+        $data->update([
+            'is_accepted' => false,
+        ]);
+        
+        return response()->json(['ok']);
+    }
+    public function stockRequestAccept(Request $request) {
+        $user = me($request->user('user'));
+        $ids = $request->ids;
+        $inv = new InventoryController();
+        $records = StockRequest::whereIn('id', $ids)
+        ->with(['seeker_branch', 'provider_branch'])
+        ->get();
+
+        // group by seeker_branch_id
+        $stockRequests = $records->groupBy('seeker_branch_id')->map(function ($items, $groupId) {
+            return [
+                'seeker_branch_id' => $groupId,
+                'seeker_branch' => $items->first()->seeker_branch,
+                'provider_branch' => $items->first()->provider_branch,
+                'records'  => $items, // collection of StockRequest models
+            ];
+        })->values();
+
+        // Create StockMovement Out
+        foreach ($stockRequests as $req) {
+            $movement = StockMovement::create([
+                'user_id' => $user->id,
+                'branch_id' => $req['records'][0]->provider_branch_id,
+                'branch_id_destination' => $req['seeker_branch_id'],
+                'type' => "outbound",
+                'label' => "OUT".date('YmdHis'),
+                'notes' => "Permintaan dari Cabang " . $req['seeker_branch']->name,
+                'status' => "PUBLISHED"
+            ]);
+
+            $totalPrice = 0;
+            $totalQuantity = 0;
+
+            foreach ($req['records'] as $rec) {
+                StockMovementProduct::create([
+                    'movement_id' => $movement->id,
+                    'product_id' => $rec->product_id,
+                    'price' => $rec->total_price / $rec->quantity,
+                    'quantity' => $rec->quantity,
+                    'total_price' => $rec->total_price,
+                ]);
+
+                $totalPrice += $rec->total_price;
+                $totalQuantity += $rec->quantity;
+            }
+
+            $movement->update([
+                'total_quantity' => $totalQuantity,
+                'total_price' => $totalPrice,
+            ]);
+
+            $inv->proceed($movement->id, false, $user);
+        }
+
+        StockRequest::whereIn('id', $ids)->update([
+            'is_accepted' => true,
+        ]);
+
+        return response()->json(['ok']);
     }
 }

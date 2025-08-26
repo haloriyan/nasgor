@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('stock_movements', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('branch_id')->unsigned()->index();
-            $table->foreign('branch_id')->references('id')->on('branches')->onDelete('cascade');
+            $table->bigInteger('branch_id')->unsigned()->index()->nullable();
+            $table->foreign('branch_id')->references('id')->on('branches')->onDelete('set null');
             $table->bigInteger('supplier_id')->unsigned()->index()->nullable();
             $table->foreign('supplier_id')->references('id')->on('suppliers')->onDelete('set null');
             $table->bigInteger('user_id')->unsigned()->index()->nullable();

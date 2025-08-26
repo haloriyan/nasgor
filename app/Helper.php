@@ -48,6 +48,16 @@ function me($user = null) {
             array_push($permissions, $perm->key);
         }
         $user->permissions = $permissions;
+
+        $myBranches = [];
+        $myBranchesID = [];
+        foreach ($user->accesses as $acc) {
+            array_push($myBranches, $acc->branch);
+            array_push($myBranchesID, $acc->branch_id);
+        }
+
+        $user->branches = $myBranches;
+        $user->branchesID = $myBranchesID;
     }
 
     return $user;

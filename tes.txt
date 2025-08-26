@@ -1,0 +1,11 @@
+UPDATE products SET branch_id = 9 WHERE
+id = 258 OR
+id = 259 OR
+id = 260 OR
+id = 261 OR
+id = 262 OR
+id = 263 OR
+id = 264 OR
+id = 265 OR
+id = 266 OR
+id = 267

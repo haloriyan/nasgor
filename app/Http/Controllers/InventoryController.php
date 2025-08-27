@@ -9,6 +9,7 @@ use App\Models\ProductImage;
 use App\Models\Purchasing;
 use App\Models\StockMovement;
 use App\Models\StockMovementProduct;
+use App\Models\StockRequest;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -337,6 +338,62 @@ class InventoryController extends Controller
 
         return redirect()->route('inventory.detail', $id)->with([
             'message' => "Berhasil menambahkan produk"
+        ]);
+    }
+
+    public function stockRequestReject($requestID, Request $request) {
+        $data = StockRequest::where('id', $requestID);
+        $stock = $data->first();
+
+        $data->update([
+            'is_accepted' => false,
+        ]);
+        
+        return redirect()->back()->with([
+            'message' => "Permintaan ditolak"
+        ]);
+    }
+    public function stockRequestStore(Request $request) {
+        $user = me($request->user('user'));
+        $productIDs = json_decode($request->product_ids);
+
+        foreach ($productIDs as $productID) {
+            $item = Product::where('id', $productID)->first();
+            $totalPrice = $request->quantity * $item['price'];
+            $ch = StockRequest::where([
+                ['is_accepted', null],
+                ['product_id', $item->id],
+                ['seeker_branch_id', $user->access->branch_id],
+                ['provider_branch_id', $request->branch_id]
+            ]);
+            $check = $ch->with(['product'])->first();
+
+            if ($check == null) {
+                StockRequest::create([
+                    'seeker_branch_id' => $user->access->branch_id,
+                    'seeker_user_id' => $user->id,
+                    'provider_branch_id' => $request->branch_id,
+                    'provider_user_id' => null,
+
+                    'product_id' => $item->id,
+                    'quantity' => $request->quantity,
+                    'total_price' => $totalPrice,
+                    'accepted_quantity' => $request->quantity,
+                    'accepted_total_price' => $totalPrice,
+                    'is_accepted' => null,
+                ]);
+            } else {
+                $newQuantity = $check->quantity + $request->quantity;
+                $newTotalPrice = $item->price * $newQuantity;
+                $ch->update([
+                    'quantity' => $newQuantity,
+                    'total_price' => $newTotalPrice,
+                ]);
+            }
+        }
+
+        return redirect()->back()->with([
+            'message' => "Berhasil mengirim permintaan"
         ]);
     }
 }

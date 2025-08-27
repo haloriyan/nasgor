@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AddOnController;
+use App\Http\Controllers\Api\StockController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CheckInController;
@@ -182,6 +183,12 @@ Route::group(['middleware' => "User"], function () {
     Route::group(['prefix' => "movement_report"], function () {
         Route::get('{productID}/detail', [ReportController::class, 'stockMovementDetail'])->name('movement_report.detail');
         Route::get('/', [ReportController::class, 'stockMovement'])->name('movement_report');
+    });
+    Route::group(['prefix' => "stock_request"], function () {
+        Route::post('store', [InventoryController::class, 'stockRequestStore'])->name('stock_request.store');
+        Route::get('{requestID}/reject', [InventoryController::class, 'stockRequestReject'])->name('stock_request.reject');
+        Route::post('accept', [StockController::class, 'stockRequestAccept'])->name('stock_request.accept');
+        Route::get('/', [UserController::class, 'stockRequest'])->name('stock_request');
     });
 
     Route::group(['prefix' => "absensi"], function () {

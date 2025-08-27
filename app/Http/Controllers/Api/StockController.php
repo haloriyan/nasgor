@@ -218,6 +218,10 @@ class StockController extends Controller
     public function stockRequestAccept(Request $request) {
         $user = me($request->user('user'));
         $ids = $request->ids;
+        $origin = $request->origin;
+        if (gettype($ids) == "string") {
+            $ids = explode(",", $ids);
+        }
         $inv = new InventoryController();
         $records = StockRequest::whereIn('id', $ids)
         ->with(['seeker_branch', 'provider_branch'])
@@ -273,6 +277,12 @@ class StockController extends Controller
             'is_accepted' => true,
         ]);
 
-        return response()->json(['ok']);
+        if ($origin == "web") {
+            return redirect()->back()->with([
+                'message' => "Berhasil menyetujui permintaan"
+            ]);
+        } else {
+            return response()->json(['ok']);
+        }
     }
 }

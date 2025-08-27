@@ -109,7 +109,7 @@
             <div class="text-sm flex grow {{ in_array(@$routes[0], ['product', 'inventory']) ? 'text-primary' : '' }}">Produk & Inventori</div>
             <ion-icon name="chevron-down-outline" class="me-4"></ion-icon>
         </a>
-        <div class="{{ in_array(@$routes[0], ['product', 'inventory']) ? 'flex' : 'hidden' }} group-hover:flex flex-col mt-2 mb-2">
+        <div class="{{ in_array(@$routes[0], ['product', 'inventory', 'stock_request']) ? 'flex' : 'hidden' }} group-hover:flex flex-col mt-2 mb-2">
             <a href="{{ route('product') }}" class="flex items-center gap-4 text-slate-500">
                 <div class="h-10 w-1 bg-white"></div>
                 <ion-icon name="ellipse-outline" class="text-[8px] {{ @$routes[0] == 'product' ? 'text-primary' : '' }}"></ion-icon>
@@ -119,6 +119,11 @@
                 <div class="h-10 w-1 bg-white"></div>
                 <ion-icon name="ellipse-outline" class="text-[8px] {{ @$routes[0] == 'inventory' ? 'text-primary' : '' }}"></ion-icon>
                 <div class="text-sm flex grow {{ @$routes[0] == 'inventory' ? 'text-primary' : '' }}">Inventory</div>
+            </a>
+            <a href="{{ route('stock_request') }}" class="flex items-center gap-4 text-slate-500">
+                <div class="h-10 w-1 bg-white"></div>
+                <ion-icon name="ellipse-outline" class="text-[8px] {{ @$routes[0] == 'stock_request' ? 'text-primary' : '' }}"></ion-icon>
+                <div class="text-sm flex grow {{ @$routes[0] == 'stock_request' ? 'text-primary' : '' }}">Request Produk</div>
             </a>
         </div>
     </div>

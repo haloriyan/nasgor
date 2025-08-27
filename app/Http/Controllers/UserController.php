@@ -15,6 +15,7 @@ use App\Models\Review;
 use App\Models\Role;
 use App\Models\Sales;
 use App\Models\StockMovement;
+use App\Models\StockRequest;
 use App\Models\Supplier;
 use App\Models\User;
 use App\Models\UserAccess;
@@ -676,6 +677,34 @@ class UserController extends Controller
             'request' => $request,
             'sales' => $sales,
             'me' => $me,
+        ]);
+    }
+    public function stockRequest(Request $request) {
+        $tab = $request->tab == "" ? "in" : $request->tab;
+        $message = Session::get('message');
+
+        $user = me($request->user('user'));
+        $branches = Branch::where('id', '!=', $user->access->branch_id)
+        ->orderBy('name', 'ASC')->get();
+
+        $myRequests = StockRequest::where([
+            ['is_accepted', null],
+            ['seeker_branch_id', $user->access->branch_id],
+        ])
+        ->with(['product.images', 'seeker_branch', 'seeker_user', 'provider_branch', 'provider_user'])->get();
+        $incomingRequests = StockRequest::where([
+            ['is_accepted', null],
+            ['provider_branch_id', $user->access->branch_id],
+        ])
+        ->with(['product.images', 'seeker_branch', 'seeker_user', 'provider_branch', 'provider_user'])->get();
+
+        return view('user.stock_request.index', [
+            'me' => $user,
+            'tab' => $tab,
+            'message' => $message,
+            'branches' => $branches,
+            'myRequests' => $myRequests,
+            'incomingRequests' => $incomingRequests,
         ]);
     }
 }

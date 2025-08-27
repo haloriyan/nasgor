@@ -103,10 +103,10 @@
     </div>
 
     <div class="group relative">
-        <a href="#" class="flex items-center gap-4 text-slate-500 {{ in_array(@$routes[0], ['product', 'inventory']) ? 'bg-primary-transparent text-primary' : '' }}">
-            <div class="h-12 w-1 {{ in_array(@$routes[0], ['product', 'inventory']) ? 'bg-primary' : 'bg-white' }}"></div>
-            <ion-icon name="cube-outline" class="{{ in_array(@$routes[0], ['product', 'inventory']) ? 'text-primary' : '' }}"></ion-icon>
-            <div class="text-sm flex grow {{ in_array(@$routes[0], ['product', 'inventory']) ? 'text-primary' : '' }}">Produk & Inventori</div>
+        <a href="#" class="flex items-center gap-4 text-slate-500 {{ in_array(@$routes[0], ['product', 'inventory', 'stock_request']) ? 'bg-primary-transparent text-primary' : '' }}">
+            <div class="h-12 w-1 {{ in_array(@$routes[0], ['product', 'inventory', 'stock_request']) ? 'bg-primary' : 'bg-white' }}"></div>
+            <ion-icon name="cube-outline" class="{{ in_array(@$routes[0], ['product', 'inventory', 'stock_request']) ? 'text-primary' : '' }}"></ion-icon>
+            <div class="text-sm flex grow {{ in_array(@$routes[0], ['product', 'inventory', 'stock_request']) ? 'text-primary' : '' }}">Produk & Inventori</div>
             <ion-icon name="chevron-down-outline" class="me-4"></ion-icon>
         </a>
         <div class="{{ in_array(@$routes[0], ['product', 'inventory', 'stock_request']) ? 'flex' : 'hidden' }} group-hover:flex flex-col mt-2 mb-2">

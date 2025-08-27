@@ -4,6 +4,7 @@
 
 @php
     $availableDateRanges = [
+        'today' => "Hari Ini",
         'last_7_days' => "Minggu Ini",
         'this_month' => "Bulan Ini",
         'last_3_months' => "3 Bulan Terakhir",

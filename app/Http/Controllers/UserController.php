@@ -78,6 +78,23 @@ class UserController extends Controller
         $end = $now->copy();
 
         switch ($rangeType) {
+            case 'today' :
+                $start = $now->copy()->startOfDay();
+                $end   = $now->copy()->endOfDay();
+                $period = CarbonPeriod::create($start, '2 hours', $end);
+                $slots = collect($period)->map(function ($date) use ($end) {
+                    $slotStart = $date->copy();
+                    $slotEnd   = $date->copy()->addHours(2)->subSecond();
+                    if ($slotEnd->gt($end)) {
+                        $slotEnd = $end;
+                    }
+                    return [
+                        'start' => $slotStart->format('Y-m-d H:i:s'),
+                        'end'   => $slotEnd->format('Y-m-d H:i:s'),
+                    ];
+                });
+
+                return $slots;
             case 'last_7_days':
                 $start = $now->copy()->subDays(6)->startOfDay();
                 $end = $now->copy()->endOfDay();
@@ -182,7 +199,7 @@ class UserController extends Controller
         }
         $myBranches = collect($myBranches);
 
-        $ranges = $this->generateDateRangeIndexes($request->date_range ?? 'last_7_days');
+        $ranges = $this->generateDateRangeIndexes($request->date_range ?? 'today');
 
         foreach ($myBranches as $branch) {
             $theOmsetSeries = [
@@ -237,11 +254,15 @@ class UserController extends Controller
             'xAxis' => [
                 'type' => "category",
                 'boundaryGap' => false,
-                'data' => collect($ranges)->map(function ($date) {
+                'data' => collect($ranges)->map(function ($date) use ($request) {
                     if ($date['start'] == $date['end']) {
                         return Carbon::parse($date['start'])->isoFormat('DD MMM');
                     } else {
-                        return Carbon::parse($date['start'])->isoFormat('DD MMM') . " - " . Carbon::parse($date['end'])->isoFormat('DD MMM');
+                        $format = "DD MMM";
+                        if ($request->date_range == "today") {
+                            $format = "HH:mm:ss";
+                        }
+                        return Carbon::parse($date['start'])->isoFormat($format) . " - " . Carbon::parse($date['end'])->isoFormat($format);
                     }
                 }),
             ],

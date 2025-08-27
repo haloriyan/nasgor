@@ -1,179 +1,152 @@
 @extends('layouts.user')
 
 @section('title', "Laporan Penjualan")
-
-@php
-    use Carbon\Carbon;
-@endphp
     
-@section('head')
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
-@endsection
+@php
+    $availableDateRanges = [
+        'today' => "Hari Ini",
+        'last_7_days' => "Minggu Ini",
+        'this_month' => "Bulan Ini",
+        'last_3_months' => "3 Bulan Terakhir",
+        'last_6_months' => "6 Bulan Terakhir",
+        'this_year' => "Tahun Ini",
+        'last_2_years' => "2 Tahun Terakhir"
+    ];
+    $colors = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'];
+@endphp
 
 @section('content')
-<input type="hidden" id="startDate" value="{{ $startDate }}">
-<input type="hidden" id="endDate" value="{{ $endDate }}">
+<input type="hidden" id="OmsetChartOption" value="{{ json_encode($omset_chart) }}">
+<input type="hidden" id="VolumeChartOption" value="{{ json_encode($volume_chart) }}">
+<input type="hidden" id="PaymentSummaryChartOption" value="{{ json_encode($paymentSummaryChart) }}">
 
-<div class="p-8 flex flex-col gap-8">
-    <div class="bg-white rounded-lg p-2 flex items-center gap-4 px-4">
-        <div class="flex flex-col border rounded-lg p-2 grow mobile:w-full">
-            <div class="text-xs text-slate-500">Cari No. Invoice</div>
-            <form class="flex items-center gap-4" onsubmit="searchProduct(event)">
-                <button class="flex items-center">
-                    <ion-icon name="search-outline" class="text-lg text-slate-700"></ion-icon>
-                </button>
-                <input type="text" id="q" name="q" class="h-8 outline-0 text-xs text-slate-600 w-full" value="{{ $request->q }}">
-                @if ($request->q != "")
-                    <div class="flex items-center cursor-pointer" onclick="addFilter({q: null})">
-                        <ion-icon name="close-outline" class="text-red-500 text-lg"></ion-icon>
-                    </div>
-                @endif
-            </form>
-        </div>
-        <div class="flex flex-col border rounded-lg p-2 w-3/12 mobile:w-full">
-            <div class="text-xs text-slate-500">Cabang</div>
-            <select class="w-full cursor-pointer h-8 text-xs text-slate-600 outline-0" onchange="addFilter({branch_id: this.value})">
-                <option value="">Semua Cabang</option>
-                @foreach ($branches as $branch)
-                    <option value="{{ $branch->id }}" {{ $request->branch_id == $branch->id ? "selected='selected'" : "" }}>{{ $branch->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="flex flex-col border rounded-lg p-2 w-3/12 mobile:w-full">
-            <div class="text-xs text-slate-500">Rentang Tanggal</div>
-            <div class="flex items-center">
-                <input type="text" id="dateRangePicker" class="h-8 outline-0 text-xs text-slate-600 w-full">
-                <ion-icon name="chevron-down-outline"></ion-icon>
-            </div>
-        </div>
-        <button class="h-12 w-12 flex items-center justify-center rounded-lg bg-green-500 text-white" onclick="addFilter({download: 1})">
-            <ion-icon name="download-outline" class="text-2xl"></ion-icon>
-        </button>
-        {{-- <div class="flex flex-col grow pt-1">
-            <div class="text-xs text-slate-500">Rentang Tanggal</div>
-            <input type="text" id="dateRangePicker" class="h-10 outline-0 text-sm text-slate-600 w-full">
-        </div>
-        <button class="bg-green-500 text-xs text-white font-medium p-3 px-4 rounded-lg" onclick="addFilter({download: 1})">
-            Download Excel
-        </button> --}}
+<div class="p-8">
+    <div class="flex items-center justify-end gap-4">
+        <select name="branch_id" id="branch_id" class="text-xs text-slate-600 font-medium border rounded-lg p-3 px-3" onchange="addFilter('branch_id', this.value)">
+            <option value="">Semua Cabang</option>
+            @foreach ($myBranches as $b => $branch)
+                <option value="{{ $branch->id }}" {{ $branchID == $branch->id ? "selected='selected'" : "" }}>{{ $branch->name }}</option>
+            @endforeach
+        </select>
+        <select name="date_range" id="date_range" class="text-xs text-slate-600 font-medium border rounded-lg p-3 px-3" onchange="addFilter('date_range', this.value)">
+            @foreach ($availableDateRanges as $key => $label)
+                <option value="{{ $key }}" {{ $request->date_range == $key ? "selected='selected'" : "" }}>{{ $label }}</option>
+            @endforeach
+        </select>
     </div>
 
-    <div class="bg-white rounded-lg p-4">
-        <!-- Outer scroll container -->
-        <div class="overflow-x-auto mt-2">
-            <!-- Inner scrollable width wrapper -->
-            <div class="w-max min-w-full mt-0 space-y-1">
-                <!-- Header -->
-                <div class="flex bg-slate-100 text-slate-600 text-sm font-semibold px-4 py-2 rounded min-w-full">
-                    <div class="w-32">
-                        <ion-icon name="calendar-outline"></ion-icon>
-                    </div>
-                    <div class="w-48">No. Invoice</div>
-                    <div class="w-36">Cabang</div>
-                    <div class="w-36">Staff</div>
-                    <div class="w-36">Pelanggan</div>
-                    <div class="w-40">Produk</div>
-                    <div class="w-24">Harga</div>
-                    <div class="w-24">Qty</div>
-                    <div class="w-28">Subtotal</div>
-                    <div class="w-28">Total Qty</div>
-                    <div class="w-32">Total Harga</div>
+    <div class="grid grid-cols-2 mobile:grid-cols-1 gap-8 mt-8">
+        <div class="flex flex-col gap-8 grow">
+            <div class="bg-white rounded-lg border">
+                <div class="flex items-center gap-4 p-6 px-8 border-b">
+                    <ion-icon name="cash-outline" class="text-2xl text-slate-700"></ion-icon>
+                    <div class="text-slate-700 flex grow">Penjualan Kotor</div>
                 </div>
-
-                <!-- Rows -->
-@foreach ($sales as $sale)
-    @foreach ($sale->items as $i => $item)
-        <div class="flex bg-white text-slate-700 text-sm px-4 py-2 rounded min-w-full">
-            @if ($i === 0)
-                <div class="w-32">
-                    <div>{{ Carbon::parse($sale->created_at)->isoFormat('DD MMMM YYYY') }}</div>
-                    <div class="text-xs text-slate-500">{{ Carbon::parse($sale->created_at)->isoFormat('HH:mm') }}</div>
+                <div class="p-8">
+                    <div id="OmsetChart" class="w-full h-[350px]"></div>
                 </div>
-                <div class="w-48">{{ $sale->invoice_number }}</div>
-                <div class="w-36">{{ $sale->branch->name }}</div>
-                <div class="w-36">{{ $sale->user->name }}</div>
-                <div class="w-36">{{ $sale->customer->name ?? "-" }}</div>
-            @else
-                <div class="w-32"></div>
-                <div class="w-48"></div>
-                <div class="w-36"></div>
-                <div class="w-36"></div>
-            @endif
-
-            <div class="w-40">{{ @$item->product->name }}</div>
-            <div class="w-24">{{ currency_encode($item->price) }}</div>
-            <div class="w-24">{{ $item->quantity }}</div>
-            <div class="w-28">{{ currency_encode($item->total_price) }}</div>
-
-            @if ($i === 0)
-                <div class="w-28">{{ $sale->total_quantity }}</div>
-                <div class="w-32">{{ currency_encode($sale->total_price) }}</div>
-            @else
-                <div class="w-28"></div>
-                <div class="w-32"></div>
-            @endif
-        </div>
-
-        {{-- Addons Display --}}
-        @foreach ($item->addons ?? [] as $addon)
-            <div class="flex text-slate-600 text-xs px-4 py-1 min-w-full">
-                <div class="w-32"></div>
-                <div class="w-48"></div>
-                <div class="w-36"></div>
-                <div class="w-36"></div>
-
-                <div class="w-40 flex items-center gap-1">
-                    <span class="text-slate-400">↳</span> {{ $addon->addon->name }}
-                </div>
-                <div class="w-24">{{ currency_encode($addon->price) }}</div>
-                <div class="w-24">{{ $addon->quantity }}</div>
-                <div class="w-28">{{ currency_encode($addon->total_price) }}</div>
-
-                <div class="w-28"></div>
-                <div class="w-32"></div>
             </div>
-        @endforeach
-    @endforeach
-@endforeach
-
+        </div>
+        <div class="flex flex-col gap-8 grow">
+            <div class="bg-white rounded-lg border">
+                <div class="flex items-center gap-4 p-6 px-8 border-b">
+                    <ion-icon name="bar-chart-outline" class="text-2xl text-slate-700"></ion-icon>
+                    <div class="text-slate-700 flex grow">Volume Transaksi</div>
+                </div>
+                <div class="p-8">
+                    <div id="VolumeChart" class="w-full h-[350px]"></div>
+                </div>
             </div>
         </div>
     </div>
 
-    @if ($sales->hasMorePages())
-        <div class="bg-white rounded-lg p-4 shadow shadow-slate-200">
-            {{ $sales->links() }}
+    <div class="grid grid-cols-3 mobile:grid-cols-1 gap-8 mt-8">
+        <div class="flex flex-col gap-6 grow">
+            <div class="bg-white rounded-lg border">
+                <div class="flex items-center gap-4 p-4 px-6 border-b">
+                    <ion-icon name="bag-outline" class="text-2xl text-slate-700"></ion-icon>
+                    <div class="text-slate-700 text-sm flex grow">Paling Laku</div>
+                </div>
+                <div class="p-6 flex flex-col gap-4">
+                    @foreach ($topProducts as $item)
+                        <div class="flex items-center gap-2">
+                            <div class="flex flex-col gap-1 grow">
+                                <div class="text-sm text-slate-600">{{ $item['product_name'] }}</div>
+                                <div class="text-xs text-primary">{{ currency_encode($item['total_sales']) }}</div>
+                            </div>
+                            <div class="text-xs text-slate-500">
+                                {{ $item['total_qty'] }} pieces
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
         </div>
-    @endif
-
+        <div class="flex flex-col gap-8 grow">
+            <div class="bg-white rounded-lg border">
+                <div class="flex items-center gap-4 p-4 px-6 border-b">
+                    <ion-icon name="storefront-outline" class="text-2xl text-slate-700"></ion-icon>
+                    <div class="text-slate-700 text-sm flex grow">Performa Cabang</div>
+                </div>
+                <div class="p-6">
+                    @foreach ($branchPerformance as $item)
+                        <div class="flex items-center gap-2 cursor-pointer" onclick="addFilter('branch_id', '{{ $item['branch_id'] }}')">
+                            <div class="flex flex-col gap-1 grow">
+                                <div class="text-sm text-slate-600">{{ $item['branch']->name }}</div>
+                                <div class="text-xs text-primary">{{ currency_encode($item['total_sales']) }}</div>
+                            </div>
+                            <div class="text-xs text-slate-500">
+                                {{ $item['transaction_count'] }} transaksi
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        <div class="flex flex-col gap-8 grow">
+            <div class="bg-white rounded-lg border">
+                <div class="flex items-center gap-4 p-4 px-6 border-b">
+                    <ion-icon name="bar-chart-outline" class="text-2xl text-slate-700"></ion-icon>
+                    <div class="text-slate-700 text-sm flex grow">Metode Pembayaran</div>
+                </div>
+                <div class="p-6 flex flex-col gap-4">
+                    <div id="PaymentSummaryChart" class="w-full h-[350px]"></div>
+                    @foreach ($paymentSummary as $item)
+                        <div class="flex items-center gap-2">
+                            <div class="flex flex-col gap-1 grow">
+                                <div class="text-sm text-slate-600">{{ $item['name'] ?? "Tidak Diketahui" }}</div>
+                                <div class="text-xs text-primary">{{ currency_encode($item['total_amount']) }}</div>
+                            </div>
+                            <div class="text-xs text-slate-500">
+                                {{ $item['value'] }} trx
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
 @section('javascript')
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js" integrity="sha256-v0oiNSTkC3fDBL7GfhIiz1UfFIgM9Cxp3ARlWOEcB7E=" crossorigin="anonymous"></script>
 <script>
-    const startDate = select("#startDate").value;
-    const endDate = select("#endDate").value;
+    const omsetChartOption = JSON.parse(select("#OmsetChartOption").value);
+    const omsetChart = echarts.init(
+        select("#OmsetChart")
+    );
+    const volumeChartOption = JSON.parse(select("#VolumeChartOption").value);
+    const volumeChart = echarts.init(
+        select("#VolumeChart")
+    );
+    const paymentSummaryChartOption = JSON.parse(select("#PaymentSummaryChartOption").value);
+    const paymentSummaryChart = echarts.init(
+        select("#PaymentSummaryChart")
+    );
 
-    flatpickr("#dateRangePicker", {
-        mode: "range",
-        dateFormat: "Y-m-d",
-        defaultDate: [startDate, endDate],
-        locale: {
-            rangeSeparator: " ke ",
-        },
-        onChange: selectedDates => {
-            if (selectedDates.length === 2) {
-                const [start, end] = selectedDates;
-                addFilter({
-                    start_date: dayjs(start).format('YYYY-MM-DD'),
-                    end_date: dayjs(end).format('YYYY-MM-DD'),
-                });
-            }
-        }
-    });
+    omsetChart.setOption(omsetChartOption);
+    volumeChart.setOption(volumeChartOption);
+    paymentSummaryChart.setOption(paymentSummaryChartOption);
 </script>
 @endsection

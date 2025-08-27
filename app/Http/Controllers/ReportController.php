@@ -6,6 +6,7 @@ use App\Exports\MovementDetailExport;
 use App\Exports\MovementExport;
 use App\Exports\PurchasingExport;
 use App\Exports\SalesExport;
+use App\Models\Branch;
 use App\Models\Product;
 use App\Models\Purchasing;
 use App\Models\Sales;
@@ -79,7 +80,182 @@ class ReportController extends Controller
             'branches' => $myBranches,
         ]);
     }
-    public function salesReport(Request $request) {
+    public function salesReport(Request $request, $branchID = null) {
+        $me = me();
+        $myBranchIDs = [];
+        $myBranches = [];
+        $omsetSeries = [];
+        $volumeSeries = [];
+        $omset = 0;
+        $volume = 0;
+        if ($branchID == null) {
+            $branchID = $request->branch_id;
+        }
+
+        foreach ($me->accesses as $access) {
+            if (!in_array($access->branch_id, $myBranchIDs)) {
+                if ($branchID == null) {
+                    array_push($myBranchIDs, $access->branch_id);
+                    array_push($myBranches, $access->branch);
+                }
+            }
+        }
+
+        if ($branchID != null) {
+            $theBranch = Branch::where('id', $branchID)->first();
+            array_push($myBranches, $theBranch);
+            array_push($myBranchIDs, $branchID);
+        }
+        $myBranches = collect($myBranches);
+
+        $userController = new UserController();
+        $ranges = $userController->generateDateRangeIndexes($request->date_range ?? 'today');
+        $rawSales = [];
+
+        foreach ($myBranches as $branch) {
+            $theOmsetSeries = [
+                'name' => $branch->name,
+                'type' => "line",
+                'data' => []
+            ];
+            $theVolumeSeries = [
+                'name' => $branch->name,
+                'type' => "line",
+                'data' => []
+            ];
+
+            foreach ($ranges as $d => $date) {
+                $dateBetween = [];
+                $sale = Sales::where([
+                    ['branch_id', $branch->id],
+                    ['status', 'PUBLISHED'],
+                    ['payment_status', 'PAID']
+                ]);
+                if ($date['start'] == $date['end']) {
+                    $sale = $sale->where('created_at', 'LIKE', '%'.$date['start'].'%');
+                } else {
+                    $sale = $sale->whereBetween('created_at', [$date['start'], $date['end']]);
+                }
+                $sales = $sale->with(['items.product', 'branch'])->get();
+
+                foreach ($sales as $item) {
+                    array_push($rawSales, $item);
+                }
+                array_push($theOmsetSeries['data'], $sales->sum('total_price'));
+                array_push($theVolumeSeries['data'], $sales->count());
+                $omset += $sales->sum('total_price');
+                $volume += $sales->count();
+            }
+
+            array_push($omsetSeries, $theOmsetSeries);
+            array_push($volumeSeries, $theVolumeSeries);
+        }
+
+        $chartOptions = [
+            'tooltip' => ['trigger' => "axis"],
+            'grid' => [
+                'left' => "1%",
+                'right' => "2%",
+                'bottom' => "0%",
+                'containLabel' => true,
+            ],
+            'toolbox' => [
+                'feature' => ['saveAsImage' => []]
+            ],
+            'yAxis' => ['type' => "value"],
+            'legend' => [
+                'data' => $myBranches->pluck('name')
+            ],
+            'xAxis' => [
+                'type' => "category",
+                'boundaryGap' => false,
+                'data' => collect($ranges)->map(function ($date) use ($request) {
+                    if ($date['start'] == $date['end']) {
+                        return Carbon::parse($date['start'])->isoFormat('DD MMM');
+                    } else {
+                        $format = "DD MMM";
+                        if ($request->date_range == "today") {
+                            $format = "HH:mm:ss";
+                        }
+                        return Carbon::parse($date['start'])->isoFormat($format) . " - " . Carbon::parse($date['end'])->isoFormat($format);
+                    }
+                }),
+            ],
+        ];
+
+        $omsetChart = array_merge($chartOptions, [
+            'series' => $omsetSeries,
+        ]);
+        $volumeChart = array_merge($chartOptions, [
+            'series' => $volumeSeries,
+        ]);
+
+        $topProducts = collect($rawSales) // your raw data
+        ->flatMap(fn($sale) => $sale['items']) // flatten items
+        ->groupBy('product_id')
+        ->map(function ($items) {
+            return [
+                'product_id'   => $items->first()['product_id'],
+                'product_name' => $items->first()['product']['name'],
+                'total_qty'    => $items->sum('quantity'),
+                'total_sales'  => $items->sum('grand_total'),
+            ];
+        })
+        ->sortByDesc('total_qty')
+        ->take(5)       // get top 5
+        ->values();
+
+        $paymentSummary = collect($rawSales) // your raw data
+        ->groupBy('payment_method')
+        ->map(function ($group) {
+            return [
+                'name' => $group->first()['payment_method'] ?? "Tidak Diketahui",
+                'value'          => $group->count(),
+                'total_amount'   => $group->sum('total_price'),
+            ];
+        })
+        ->values();
+        $branchPerformance = collect($rawSales) // raw data
+        ->groupBy('branch_id')
+        ->map(function ($branchSales, $branchId) {
+            return [
+                'branch_id'     => $branchId,
+                'branch' => $branchSales->first()->branch,
+                'total_sales'   => $branchSales->sum('total_price'),
+                'transaction_count' => $branchSales->count(),
+            ];
+        })
+        ->sortByDesc('total_sales')
+        ->values();
+
+        $paymentSummaryChart = [
+            'tooltip' => ['trigger' => "item"],
+            'series' => [
+                [
+                    'name' => "Metode Pembayaran",
+                    'type' => "pie",
+                    'radius' => ['40%', '70%'],
+                    'avoidLabelOverlap' => true,
+                    'data' => $paymentSummary,
+                ]
+            ]
+        ];
+
+        return view('user.report.sales', [
+            'request' => $request,
+            'omset' => $omset,
+            'volume' => $volume,
+            'omset_chart' => $omsetChart,
+            'volume_chart' => $volumeChart,
+            'myBranches' => $myBranches,
+            'branchID' => $branchID,
+            'topProducts' => $topProducts,
+            'branchPerformance' => $branchPerformance,
+            'paymentSummary' => $paymentSummary,
+            'paymentSummaryChart' => $paymentSummaryChart,
+        ]);
+    }
+    public function salesReportOri(Request $request) {
         $me = me();
         $myBranchIDs = [];
         $myBranches = [];

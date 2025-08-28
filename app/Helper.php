@@ -113,6 +113,23 @@ function generateDateRangeIndexes($rangeType) {
     $end = $now->copy();
 
     switch ($rangeType) {
+        case 'today' :
+            $start = $now->copy()->startOfDay();
+            $end   = $now->copy()->endOfDay();
+            $period = CarbonPeriod::create($start, '2 hours', $end);
+            $slots = collect($period)->map(function ($date) use ($end) {
+                $slotStart = $date->copy();
+                $slotEnd   = $date->copy()->addHours(2)->subSecond();
+                if ($slotEnd->gt($end)) {
+                    $slotEnd = $end;
+                }
+                return [
+                    'start' => $slotStart->format('Y-m-d H:i:s'),
+                    'end'   => $slotEnd->format('Y-m-d H:i:s'),
+                ];
+            });
+
+            return $slots;
         case 'last_7_days':
             $start = $now->copy()->subDays(6)->startOfDay();
             $end = $now->copy()->endOfDay();

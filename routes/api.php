@@ -42,7 +42,7 @@ Route::group(['prefix' => "user"], function () {
     });
 });
 
-Route::get('dashboard', [UserController::class, 'dashboard']);
+Route::get('dashboard/{branchID?}', [UserController::class, 'dashboard']);
 
 Route::group(['prefix' => "pos"], function () {
     Route::post('store', [PosController::class, 'store']);

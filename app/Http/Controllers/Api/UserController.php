@@ -71,17 +71,23 @@ class UserController extends Controller
         ]);
     }
     
-    public function dashboard(Request $request) {
+    public function dashboard(Request $request, $branchID = null) {
         $user = me($request->user('user'));
         $omset = 0;
         $volume = 0;
         $myBranchIDs = [];
-        $ranges = generateDateRangeIndexes($request->date_range ?? 'last_7_days');
+        $myBranches = [];
+        $dateRange = $request->date_range ?? 'today';
+        $ranges = generateDateRangeIndexes($dateRange);
+        if ($branchID == null) {
+            $branchID = $request->branch_id;
+        }
 
-        $labels = collect($ranges)->map(function ($date) {
+        $labels = collect($ranges)->map(function ($date) use ($dateRange) {
+            $format = $dateRange == "today" ? "HH:mm" : "DD MMM";
             return $date['start'] === $date['end']
-                ? \Carbon\Carbon::parse($date['start'])->format('d M')
-                : \Carbon\Carbon::parse($date['start'])->format('d M') . ' - ' . \Carbon\Carbon::parse($date['end'])->format('d M');
+                ? \Carbon\Carbon::parse($date['start'])->isoFormat($format)
+                : \Carbon\Carbon::parse($date['start'])->isoFormat($format) . ' - ' . \Carbon\Carbon::parse($date['end'])->isoFormat($format);
         })->values()->toArray();
 
         // Define solid RGB colors for your branches
@@ -97,13 +103,24 @@ class UserController extends Controller
         $omsetDatasets = [];
         $volumeDatasets = [];
         $legend = [];
+        $theBranch = null;
 
         foreach ($user->accesses as $i => $access) {
-            $branch = $access->branch;
+            $branch = $theBranch == null ? $access->branch : $theBranch;
             if (!in_array($branch->id, $myBranchIDs)) {
-                $myBranchIDs[] = $branch->id;
+                if ($branchID == null) {
+                    array_push($myBranchIDs, $access->branch_id);
+                    array_push($myBranches, $access->branch);
+                }
             }
-
+        }
+        if ($branchID != null) {
+            $theBranch = Branch::where('id', $branchID)->first();
+            array_push($myBranches, $theBranch);
+            array_push($myBranchIDs, $branchID);
+        }
+        
+        foreach ($myBranches as $branch) {
             $rgb = $rawColors[$i % count($rawColors)];
             $colorString = "rgba({$rgb[0]}, {$rgb[1]}, {$rgb[2]}, OPACITY)";
 

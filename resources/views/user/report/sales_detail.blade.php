@@ -16,6 +16,10 @@
 <input type="hidden" id="endDate" value="{{ $endDate }}">
 
 <div class="p-8 flex flex-col gap-8">
+    <a href="{{ route('sales_report') }}" class="flex items-center gap-3">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+        <div class="text-xs text-slate-500">Kembali</div>
+    </a>
     <div class="bg-white rounded-lg p-2 flex items-center gap-4 px-4">
         <div class="flex flex-col border rounded-lg p-2 grow mobile:w-full">
             <div class="text-xs text-slate-500">Cari No. Invoice</div>

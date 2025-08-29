@@ -171,6 +171,8 @@ Route::group(['middleware' => "User"], function () {
 
     Route::group(['prefix' => "sales_report"], function () {
         Route::post('test', [ReportController::class, 'test'])->name('sales_report.test');
+        Route::get('top-selling', [ReportController::class, 'topSellingReport'])->name('sales_report.topSelling');
+        Route::get('detail', [ReportController::class, 'salesDetailReport'])->name('sales_report.detail');
         Route::get('/{branchID?}', [ReportController::class, 'salesReport'])->name('sales_report');
     });
     Route::group(['prefix' => "expense_report"], function () {

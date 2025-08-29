@@ -19,6 +19,12 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
 {
+    protected $userController;
+
+    public function __construct()
+    {
+        $this->userController = new UserController();
+    }
     public function purchasingReport(Request $request) {
         $me = me();
         $myBranchIDs = [];
@@ -109,7 +115,7 @@ class ReportController extends Controller
         $myBranches = collect($myBranches);
 
         $userController = new UserController();
-        $ranges = $userController->generateDateRangeIndexes($request->date_range ?? 'today');
+        $ranges = $this->userController->generateDateRangeIndexes($request->date_range ?? 'today');
         $rawSales = [];
 
         foreach ($myBranches as $branch) {
@@ -241,6 +247,32 @@ class ReportController extends Controller
             ]
         ];
 
+        $orderTypeSummary = collect($rawSales)
+            ->groupBy(fn($sale) => $sale['order_type'])
+            ->map(function ($salesGroup, $orderType) {
+                $salesGroup = collect($salesGroup);
+                return [
+                    'name'        => $orderType,
+                    'total_sales'       => $salesGroup->sum('total_price'),
+                    'value' => $salesGroup->count(),
+                ];
+            })
+            ->sortByDesc('total_sales')
+            ->values();
+
+        $orderTypeChart = [
+            'tooltip' => ['trigger' => "item"],
+            'series' => [
+                [
+                    'name' => "Metode Pembayaran",
+                    'type' => "pie",
+                    'radius' => ['40%', '70%'],
+                    'avoidLabelOverlap' => true,
+                    'data' => $orderTypeSummary,
+                ]
+            ]
+        ];
+
         return view('user.report.sales', [
             'request' => $request,
             'omset' => $omset,
@@ -253,9 +285,11 @@ class ReportController extends Controller
             'branchPerformance' => $branchPerformance,
             'paymentSummary' => $paymentSummary,
             'paymentSummaryChart' => $paymentSummaryChart,
+            'orderTypeSummary' => $orderTypeSummary,
+            'orderTypeChart' => $orderTypeChart,
         ]);
     }
-    public function salesReportOri(Request $request) {
+    public function salesDetailReport(Request $request) {
         $me = me();
         $myBranchIDs = [];
         $myBranches = [];
@@ -308,12 +342,79 @@ class ReportController extends Controller
             );
         }
 
-        return view('user.report.sales', [
+        return view('user.report.sales_detail', [
             'startDate' => $startDate,
             'endDate' => $endDate,
             'sales' => $sales,
             'request' => $request,
             'branches' => $myBranches,
+        ]);
+    }
+    public function topSellingReport(Request $request) {
+        $ranges = $this->userController->generateDateRangeIndexes($request->date_range ?? 'today');
+        $filter = [
+            ['status', 'PUBLISHED'],
+            ['payment_status', 'PAID']
+        ];
+        if ($request->branch_id != "") {
+            array_push($filter, ['branch_id', $request->branch_id]);
+        }
+
+        $rawSales = [];
+        foreach ($ranges as $d => $date) {
+            $dateBetween = [];
+            
+            $sale = Sales::where($filter);
+            if ($date['start'] == $date['end']) {
+                $sale = $sale->where('created_at', 'LIKE', '%'.$date['start'].'%');
+            } else {
+                $sale = $sale->whereBetween('created_at', [$date['start'], $date['end']]);
+            }
+            $sales = $sale->with(['items.product', 'branch'])->get();
+
+            foreach ($sales as $item) {
+                array_push($rawSales, $item);
+            }
+        }
+        
+        $topProducts = collect($rawSales) // your raw data
+        ->flatMap(fn($sale) => $sale['items']) // flatten items
+        ->groupBy('product_id')
+        ->map(function ($items) {
+            return [
+                'product_id'   => $items->first()['product_id'],
+                'product_name' => $items->first()['product']['name'],
+                'total_qty'    => $items->sum('quantity'),
+                'name' => $items->first()['product']['name'],
+                'value'    => $items->sum('quantity'),
+                'total_sales'  => $items->sum('grand_total'),
+            ];
+        })
+        ->sortByDesc('total_qty')
+        ->values();
+
+        $me = me();
+        $branchID = $request->branch_id;
+
+        $chartOptions = [
+            'tooltip' => ['trigger' => "item"],
+            'series' => [
+                [
+                    'name' => "Metode Pembayaran",
+                    'type' => "pie",
+                    'radius' => ['40%', '70%'],
+                    'avoidLabelOverlap' => true,
+                    'data' => $topProducts,
+                ]
+            ]
+        ];
+
+        return view('user.report.top_selling', [
+            'me' => $me,
+            'request' => $request,
+            'branchID' => $branchID,
+            'topProducts' => $topProducts,
+            'chartOptions' => $chartOptions,
         ]);
     }
     public function stockMovement(Request $request, $me = null) {

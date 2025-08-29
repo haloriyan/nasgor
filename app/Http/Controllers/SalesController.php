@@ -38,7 +38,7 @@ class SalesController extends Controller
     public function detail($id, Request $request) {
         $message = Session::get('message');
         $sales = Sales::where('id', $id)
-        ->with(['items', 'items.product.images', 'items.addons.addon', 'customer', 'review', 'branch', 'user'])
+        ->with(['items', 'items.product.images', 'items.addons.addon', 'items.price_data', 'customer', 'review', 'branch', 'user'])
         ->first();
 
         $waLink = null;

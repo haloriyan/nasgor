@@ -16,7 +16,7 @@ class SalesItem extends Model
         return $this->belongsTo(Product::class, 'product_id');
     }
     public function price_data() {
-        return $this->belongsTo(Product::class, 'price_id');
+        return $this->belongsTo(ProductPrice::class, 'price_id');
     }
     public function addons() {
         return $this->hasMany(SalesItemAddon::class, 'item_id');

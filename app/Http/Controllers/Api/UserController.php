@@ -10,6 +10,7 @@ use App\Models\Purchasing;
 use App\Models\Review;
 use App\Models\Sales;
 use App\Models\StockMovement;
+use App\Models\StockOrder;
 use App\Models\StockRequest;
 use App\Models\Supplier;
 use App\Models\User;
@@ -17,6 +18,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -294,5 +296,45 @@ class UserController extends Controller
             'incoming_requests' => $incomingRequests,
             'my_requests' => $myRequests,
         ]);
+    }
+    public function stockOrder(Request $request) {
+        $user = me($request->user('user'));
+
+        $orders = StockOrder::whereNull('status')
+        ->whereIn('seeker_branch_id', $user->branchesID)
+        ->with(['product.images', 'taker_id'])
+        ->orderBy('created_at', 'DESC')
+        ->get();
+        $histories = StockOrder::where('status', true)
+        ->with(['product.images', 'taker_id'])
+        ->orderBy('created_at', 'DESC')
+        ->get();
+        
+        $orders = $this->stockOrderRestructure($orders);
+        $histories = $this->stockOrderRestructure($histories);
+
+        return response()->json([
+            'orders' => $orders,
+            'histories' => $histories,
+            'user' => $user,
+        ]);
+    }
+    public function stockOrderRestructure($orders) {
+        return $orders->groupBy('product_id')->map(function ($items, $productId) {
+            return [
+                'identifier'     => Str::uuid(),
+                'product_id'     => $productId,
+                'branches'       => $items->pluck('seeker_branch')
+                                        ->unique('id')
+                                        ->values()
+                                        ->map(fn($branch) => [
+                                                'id'   => $branch->id,
+                                                'name' => $branch->name,
+                                        ]),
+                'total_quantity' => $items->sum('quantity'), // ✅ from StockOrder level
+                'product'        => $items->first()->product, // keep product info
+                'orders'         => $items->values(),        // keep original orders if needed
+            ];
+        })->values();
     }
 }

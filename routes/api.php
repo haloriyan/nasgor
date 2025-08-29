@@ -95,3 +95,10 @@ Route::group(['prefix' => "minta"], function () {
     Route::post('accept', [StockController::class, 'stockRequestAccept']);
     Route::get('/', [UserController::class, 'minta']);
 });
+
+Route::group(['prefix' => "stock_order"], function () {
+    // Route::post('store', [])
+    Route::post('store', [StockController::class, 'stockOrderStore']);
+    Route::post('accept', [StockController::class, 'stockOrderAccept']);
+    Route::get('/', [UserController::class, 'stockOrder']);
+});

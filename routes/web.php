@@ -191,6 +191,15 @@ Route::group(['middleware' => "User"], function () {
         Route::get('/', [UserController::class, 'stockRequest'])->name('stock_request');
     });
 
+    Route::group(['prefix' => "stock_order"], function () {
+        Route::post('store', [UserController::class, 'store'])->name('stock_order.store');
+        Route::get('/', [UserController::class, 'stock_order'])->name('stock_order');
+    });
+    Route::group(['prefix' => "stock_order_taker"], function () {
+    Route::post('store', [UserController::class, 'store'])->name('stock_order_taker.store');
+        Route::get('/', [UserController::class, 'stock_order_taker'])->name('stock_order_taker');
+    });
+
     Route::group(['prefix' => "absensi"], function () {
         // Route::post('/', [UserController::class, 'delete'])->name('checkin.delete');
         Route::group(['prefix' => "{id}"], function () {

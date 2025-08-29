@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ReportController;
 use App\Models\Product;
+use App\Models\Purchasing;
 use App\Models\StockMovement;
 use App\Models\StockMovementProduct;
+use App\Models\StockOrder;
 use App\Models\StockRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -172,7 +174,7 @@ class StockController extends Controller
         foreach ($items as $item) {
             $totalPrice = $item['quantity'] * $item['price'];
             $ch = StockRequest::where([
-                ['is_accepted', false],
+                ['is_accepted', null],
                 ['product_id', $item['id']],
                 ['seeker_branch_id', $user->access->branch_id],
                 ['provider_branch_id', $branch['id']]
@@ -284,5 +286,78 @@ class StockController extends Controller
         } else {
             return response()->json(['ok']);
         }
+    }
+
+    public function stockOrderStore(Request $request) {
+        $user = me($request->user('user'));
+        $items = $request->items;
+        $branch = $request->branch;
+        foreach ($items as $item) {
+            $totalPrice = $item['quantity'] * $item['price'];
+            $ch = StockOrder::where([
+                ['status', null],
+                ['product_id', $item['id']],
+                ['seeker_branch_id', $branch['id']],
+            ]);
+            $check = $ch->first();
+
+            if ($check == null) {
+                StockOrder::create([
+                    'seeker_branch_id' => $branch['id'],
+                    'seeker_id' => $user->id,
+
+                    'product_id' => $item['id'],
+                    'quantity' => $item['quantity'],
+                    'status' => null,
+                ]);
+            } else {
+                $newQuantity = $check->quantity + $item['quantity'];
+                $newTotalPrice = $item['price'] * $newQuantity;
+                $ch->update([
+                    'quantity' => $newQuantity,
+                    'total_price' => $newTotalPrice,
+                ]);
+            }
+        }
+
+        return response()->json(['ok']);
+    }
+    public function stockOrderAccept(Request $request) {
+        $productIDs = $request->product_ids;
+        
+        $ord = StockOrder::whereIn('product_id', $productIDs)
+        ->where([
+            ['status', null]
+        ]);
+        $orders = $ord->get();
+        
+        // $result = $orders->groupBy('seeker_branch_id')->map(function ($items) {
+        //     $mergedOrders = $items->groupBy('product_id')->map(function ($productItems) {
+        //         return [
+        //             'product_id' => $productItems->first()->product_id,
+        //             'quantity'   => $productItems->sum('quantity'),
+        //             // 'orders'     => $productItems // keep originals if you want
+        //         ];
+        //     })->values();
+
+        //     return [
+        //         'seeker_branch_id' => $items->first()->seeker_branch_id,
+        //         'total_quantity'   => $items->sum('quantity'),
+        //         'orders'           => $mergedOrders,
+        //     ];
+        // })->values();
+
+        // foreach ($result as $item) {
+        //     $purchasing = Purchasing::create([
+        //         'branch_id' => $item['seeker_branch_id'],
+        //         'label' => "PO".date('YmdHis'),
+        //     ]);
+        // }
+
+        $ord->update([
+            'status' => true,
+        ]);
+        
+        return response()->json(['ok']);
     }
 }

@@ -152,6 +152,7 @@ class PurchasingController extends Controller
         }
         $purch = Purchasing::where('id', $id);
         $purchasing = $purch->with(['items'])->first();
+        $movement = null;
 
         $toUpdate = [
             'status' => "RECEIVED",

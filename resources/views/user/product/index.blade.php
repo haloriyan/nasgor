@@ -91,6 +91,10 @@
             let source = `/storage/category_images/${filename}`;
             applyImageToDiv(imagePreview, source);
         }
+
+        if (select("#AddCategory").classList.contains('hidden')) {
+            toggleHidden("#AddCategory");
+        }
     }
     const CancelEditCategory = () => {
         select("#AddCategory #id").value = "";
@@ -100,6 +104,8 @@
 
         select("#AddCategory #imagePreviewEdit").innerHTML = `<ion-icon name="image-outline" class="text-xl text-slate-700"></ion-icon>
         <input type="file" name="image" class="absolute top-0 left-0 right-0 bottom-0 opacity-0 cursor-pointer" onchange="onChangeImage(this, '#imagePreviewEdit')" required>`;
+
+        toggleHidden("#AddCategory");
     }
     const EditAddOn = (data) => {
         data = JSON.parse(data);

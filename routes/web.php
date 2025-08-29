@@ -59,6 +59,7 @@ Route::group(['middleware' => "User"], function () {
             Route::post('store', [CategoryController::class, 'store'])->name('product.category.store');
             Route::post('delete', [CategoryController::class, 'delete'])->name('product.category.delete');
             Route::get('{id}/toggle-pos', [CategoryController::class, 'togglePos'])->name('product.category.togglePos');
+            Route::get('{id}/toggle-requestable', [CategoryController::class, 'toggleRequestable'])->name('product.category.toggleRequestable');
             Route::get('{id}/priority/{action}', [CategoryController::class, 'priority'])->name('product.category.priority');
         });
 

@@ -300,7 +300,7 @@ class UserController extends Controller
     public function stockOrder(Request $request) {
         $user = me($request->user('user'));
 
-        $orders = StockOrder::whereNull('status')
+        $orders = StockOrder::where('date', $request->date)
         ->whereIn('seeker_branch_id', $user->branchesID)
         ->with(['product.images', 'taker_id'])
         ->orderBy('created_at', 'DESC')
@@ -324,6 +324,7 @@ class UserController extends Controller
             return [
                 'identifier'     => Str::uuid(),
                 'product_id'     => $productId,
+                'branch_ids'     => $items->pluck('seeker_branch_id'),
                 'branches'       => $items->pluck('seeker_branch')
                                         ->unique('id')
                                         ->values()

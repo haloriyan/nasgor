@@ -34,6 +34,7 @@ class ProductImport implements WithMultipleSheets
                     'priority' => 0,
                     'is_active' => true,
                     'pos_visibility' => true,
+                    'requestable' => false,
                 ]);
             }
 

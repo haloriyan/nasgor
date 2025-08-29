@@ -14,6 +14,7 @@ class CategoryController extends Controller
             'name' => $request->name,
             'is_active' => true,
             'pos_visibility' => true,
+            'requestable' => false,
         ];
 
         if ($request->hasFile('image')) {
@@ -61,6 +62,18 @@ class CategoryController extends Controller
 
         $data->update([
             'pos_visibility' => !$category->pos_visibility
+        ]);
+
+        return redirect()->route('product', [
+            'tab' => "kategori"
+        ]);
+    }
+    public function toggleRequestable($id) {
+        $data = Category::where('id', $id);
+        $category = $data->first();
+
+        $data->update([
+            'requestable' => !$category->requestable
         ]);
 
         return redirect()->route('product', [

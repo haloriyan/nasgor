@@ -292,12 +292,15 @@ class StockController extends Controller
         $user = me($request->user('user'));
         $items = $request->items;
         $branch = $request->branch;
+        $date = $request->date;
+
         foreach ($items as $item) {
             $totalPrice = $item['quantity'] * $item['price'];
             $ch = StockOrder::where([
                 ['status', null],
                 ['product_id', $item['id']],
                 ['seeker_branch_id', $branch['id']],
+                ['date', $date]
             ]);
             $check = $ch->first();
 
@@ -305,6 +308,7 @@ class StockController extends Controller
                 StockOrder::create([
                     'seeker_branch_id' => $branch['id'],
                     'seeker_id' => $user->id,
+                    'date' => $date,
 
                     'product_id' => $item['id'],
                     'quantity' => $item['quantity'],
@@ -323,11 +327,12 @@ class StockController extends Controller
         return response()->json(['ok']);
     }
     public function stockOrderAccept(Request $request) {
-        $productIDs = $request->product_ids;
-        
-        $ord = StockOrder::whereIn('product_id', $productIDs)
-        ->where([
-            ['status', null]
+        Log::info($request->date);
+        $ord = StockOrder::where([
+            ['status', null],
+            ['seeker_branch_id', $request->branch_id],
+            ['product_id', $request->product_id],
+            ['date', $request->date]
         ]);
         $orders = $ord->get();
         

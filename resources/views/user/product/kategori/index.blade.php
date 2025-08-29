@@ -1,6 +1,12 @@
-<div class="flex mobile:flex-col gap-8 mt-8">
-    <div class="flex flex-col gap-4 w-7/12 bg-white p-8 rounded-lg shadow shadow-slate-200">
-        <h3 class="text-xl text-slate-700 font-medium">List Kategori</h3>
+<div class="flex mobile:flex-col gap-4 mt-6">
+    <div class="flex flex-col gap-4 grow bg-white p-8 rounded-lg shadow shadow-slate-200">
+        <div class="flex items-center gap-4">
+            <h3 class="text-xl text-slate-700 font-medium flex grow">List Kategori</h3>
+            <button class="p-3 px-4 rounded-lg bg-green-500 text-white text-sm font-medium flex items-center gap-3" onclick="toggleHidden('#AddCategory')">
+                <ion-icon name="add-outline"></ion-icon>
+                <div class="mobile:hidden">Kategori</div>
+            </button>
+        </div>
         <div class="min-w-full overflow-hidden overflow-x-auto p-5">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="text-sm text-slate-700 bg-gray-50">
@@ -11,6 +17,7 @@
                         <th scope="col" class="px-6 py-3 text-left">Nama</th>
                         <th scope="col" class="px-6 py-3 text-left">Produk</th>
                         <th scope="col" class="px-6 py-3 text-left">Tampil di POS</th>
+                        <th scope="col" class="px-6 py-3 text-left">Request Pembelian</th>
                         <th scope="col" class="px-6 py-3 text-left"></th>
                     </tr>
                 </thead>
@@ -37,8 +44,15 @@
                             <td class="px-6 py-4 text-sm text-slate-700">
                                 <div class="flex">
                                     <a href="{{ route('product.category.togglePos', [$category->id]) }}" class="p-1 rounded-full {{ $category->pos_visibility ? 'bg-green-500' : 'bg-slate-200' }}">
-                                    <div class="h-4 w-4 bg-white rounded-full {{ $category->pos_visibility ? 'ms-4' : 'me-4' }}" id="SwitchDot"></div>
-                                </a>
+                                        <div class="h-4 w-4 bg-white rounded-full {{ $category->pos_visibility ? 'ms-4' : 'me-4' }}" id="SwitchDot"></div>
+                                    </a>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-slate-700">
+                                <div class="flex">
+                                    <a href="{{ route('product.category.toggleRequestable', [$category->id]) }}" class="p-1 rounded-full {{ $category->requestable ? 'bg-green-500' : 'bg-slate-200' }}">
+                                        <div class="h-4 w-4 bg-white rounded-full {{ $category->requestable ? 'ms-4' : 'me-4' }}" id="SwitchDot"></div>
+                                    </a>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-sm text-slate-700 flex items-center gap-4">
@@ -55,7 +69,7 @@
             </table>
         </div>
     </div>
-    <form action="{{ route('product.category.store') }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-4 grow bg-white p-8 rounded-lg shadow shadow-slate-200" id="AddCategory">
+    <form action="{{ route('product.category.store') }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-4 w-4/12 bg-white p-8 rounded-lg shadow shadow-slate-200 hidden" id="AddCategory">
         @csrf
         <h3 class="text-lg text-slate-700 font-medium" id="title">Tambah Kategori Baru</h3>
         <input type="hidden" name="id" id="id">

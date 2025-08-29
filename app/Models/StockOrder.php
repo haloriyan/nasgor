@@ -8,7 +8,7 @@ class StockOrder extends Model
 {
     protected $fillable = [
         'seeker_branch_id', 'seeker_id', 'taker_id', 'product_id', 
-        'price', 'quantity', 'total_price', 'status'
+        'price', 'quantity', 'total_price', 'status', 'date'
     ];
 
     public function product() {

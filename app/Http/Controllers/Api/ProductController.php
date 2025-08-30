@@ -22,7 +22,7 @@ class ProductController extends Controller
             $limit = 999999;
             $query = $query->whereHas('categories', function ($q) {
                 $q->where('requestable', true);
-            });
+            })->orderBy('name', 'ASC');
         }
 
         $products = $query->with(['addons.addon', 'prices', 'images'])

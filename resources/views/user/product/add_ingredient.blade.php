@@ -5,6 +5,7 @@
             <h3 class="text-lg text-slate-700 font-medium flex grow" id="title">Tambah Bahan</h3>
             <ion-icon name="close-outline" class="cursor-pointer text-3xl" onclick="toggleHidden('#AddIngredient')"></ion-icon>
         </div>
+        <input type="hidden" name="variant_id" id="variantID">
 
         <div id="ProductSelector"></div>
 

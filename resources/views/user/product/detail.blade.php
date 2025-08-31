@@ -110,12 +110,16 @@
                     <label class="text-slate-500 group-focus-within:text-primary text-xs absolute top-2 left-2">Harga Pokok Produksi</label>
                     <input type="text" name="price" id="price" class="w-full h-10 mt-2 outline-none bg-transparent text-sm text-slate-700" value="{{ $product->price }}" required />
                 </div>
+
+                <div class="text-white text-xs whitespace-wrap">
+                    {{ $product->prices }}
+                </div>
             </div>
         </form>
     </div>
 
-    <div class="grid grid-cols-3 mobile:grid-cols-1 mt-4 gap-8">
-        <div class="flex flex-col bg-white rounded-lg border">
+    <div class="grid grid-cols-2 mobile:grid-cols-1 mt-4 gap-8">
+        {{-- <div class="flex flex-col bg-white rounded-lg border">
             <div class="flex items-center gap-4 border-b text-slate-600 h-16 px-8">
                 <ion-icon name="cash-outline"></ion-icon>
                 <div class="flex grow">Harga</div>
@@ -158,6 +162,48 @@
                     @endforeach
                 </div>
             </div>
+        </div> --}}
+        <div class="flex flex-col bg-white rounded-lg border">
+            <div class="flex items-center gap-4 border-b text-slate-600 h-16 px-8">
+                <ion-icon name="list-outline"></ion-icon>
+                <div class="flex grow">Varian & Resep</div>
+                <button class="p-2 px-4 rounded-lg bg-primary text-white text-xs font-medium flex items-center" onclick="toggleHidden('#AddVariant')">
+                    <ion-icon name="add-outline" class="text-lg"></ion-icon>
+                </button>
+            </div>
+            <div class="p-8">
+                <div class="flex flex-col gap-4">
+                    @foreach ($product->variants as $variant)
+                        <div class="p-4 rounded-lg shadow flex flex-col gap-4">
+                            <div class="flex items-center gap-4">
+                                <div class="flex flex-col">
+                                    <div class="text-slate-700">{{ $variant->label }}</div>
+                                    <div class="text-xs text-slate-500">{{ currency_encode($variant->price) }}</div>
+                                </div>
+                                <a href="{{ route('product.detail.variant.update', [$product->id, $variant->id]) }}" class="flex items-center p-2 px-3 rounded-lg bg-green-500 text-white" onclick="EditVariant(event, '{{ $variant }}')">
+                                    <ion-icon name="create-outline" class="text-lg"></ion-icon>
+                                </a>
+                                <a href="{{ route('product.detail.variant.delete', [$product->id, $variant->id]) }}" class="flex items-center p-2 px-3 rounded-lg bg-red-500 text-white" onclick="DeleteVariant(event, '{{ $variant }}')">
+                                    <ion-icon name="trash-outline" class="text-lg"></ion-icon>
+                                </a>
+                            </div>
+                            @foreach ($variant->ingredients as $ingredient)
+                                <div class="flex items-center gap-4">
+                                    <div class="text-sm text-slate-700">{{ $ingredient->ingredient->name }}</div>
+                                    <div class="flex grow bg-slate-300 h-[1px]"></div>
+                                    <div class="text-xs text-slate-500">{{ $ingredient->quantity }}x</div>
+                                    <a href="{{ route('product.detail.ingredient.delete', [$product->id, $ingredient->id]) }}" class="p-2 px-3 rounded-lg bg-red-200 text-red-500 flex items-center" onclick="RemoveIngredient(event, '{{ $ingredient }}')">
+                                        <ion-icon name="close-outline"></ion-icon>
+                                    </a>
+                                </div>
+                            @endforeach
+                            <div class="flex justify-end">
+                                <div class="text-xs text-primary cursor-pointer" onclick="AddIngredient('{{ $variant->id }}')">+ Bahan Resep</div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
         </div>
         <div class="flex flex-col bg-white rounded-lg border">
             <div class="flex items-center gap-4 border-b text-slate-600 h-16 px-8">
@@ -187,6 +233,9 @@
 
 @include('user.product.add_price')
 @include('user.product.remove_price')
+@include('user.product.add_variant')
+@include('user.product.edit_variant')
+@include('user.product.delete_variant')
 @include('user.product.add_ingredient')
 @include('user.product.remove_ingredient')
 @include('user.product.add_addon')
@@ -219,6 +268,10 @@
 
         toggleHidden("#RemoveAddOn");
     }
+    const AddIngredient = (variantID) => {
+        select("#AddIngredient #variantID").value = variantID;
+        toggleHidden("#AddIngredient");
+    }
     const RemoveIngredient = (event, data) => {
         event.preventDefault();
         const link = event.currentTarget;
@@ -227,6 +280,25 @@
         select("#RemoveIngredient #name").innerHTML = data.ingredient.name;
 
         toggleHidden("#RemoveIngredient");
+    }
+    const EditVariant = (event, data) => {
+        event.preventDefault();
+        const link = event.currentTarget;
+        data = JSON.parse(data);
+        select("#EditVariant form").setAttribute('action', link.href);
+
+        select("#EditVariant #label").value = data.label;
+        select("#EditVariant #price").value = data.price;
+
+        toggleHidden("#EditVariant");
+    }
+    const DeleteVariant = (event, data) => {
+        event.preventDefault();
+        const link = event.currentTarget;
+        data = JSON.parse(data);
+        select("#DeleteVariant form").setAttribute('action', link.href);
+
+        toggleHidden("#DeleteVariant");
     }
     const submitStoreCategory = () => {
         select("#StoreCategory").submit();

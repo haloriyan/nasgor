@@ -38,7 +38,7 @@ class SalesController extends Controller
     public function detail($id, Request $request) {
         $message = Session::get('message');
         $sales = Sales::where('id', $id)
-        ->with(['items', 'items.product.images', 'items.addons.addon', 'items.price_data', 'customer', 'review', 'branch', 'user'])
+        ->with(['items', 'items.product.images', 'items.addons.addon', 'items.variant', 'customer', 'review', 'branch', 'user'])
         ->first();
 
         $waLink = null;
@@ -206,8 +206,8 @@ _".env('APP_NAME')." - {$storeName}_
             $me = me();
         }
         $sale = Sales::where('id', $id);
-        $sales = $sale->with(['items.product.ingredients.ingredient'])->first();
-        Log::info($sales);
+        $sales = $sale->with(['items.product', 'items.variant'])->first();
+
         $movementItems = [];
 
         foreach ($sales->items as $item) {
@@ -220,7 +220,7 @@ _".env('APP_NAME')." - {$storeName}_
                 'total_price' => $product->price * $item->quantity,
             ]);
 
-            foreach ($product->ingredients as $ingredient) {
+            foreach ($item->variant->ingredients as $ingredient) {
                 array_push($movementItems, [
                     'product_id' => $ingredient->ingredient->id,
                     'product_name' => $ingredient->ingredient->name,
@@ -230,8 +230,6 @@ _".env('APP_NAME')." - {$storeName}_
                 ]);
             }
         }
-
-        Log::info($movementItems);
 
         if ($sales->status != "DRAFT") {
             return redirect()->back();

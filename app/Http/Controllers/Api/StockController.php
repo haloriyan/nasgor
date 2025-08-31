@@ -153,6 +153,21 @@ class StockController extends Controller
             ];
         }
 
+        Log::info($movements[0]);
+        // Grouping by days
+        $groupedMovements = [];
+        $addedDates = [];
+        foreach ($movements as $m => $move) {
+            $theDate = Carbon::parse($move['date'])->format('Y-m-d');
+            if (!in_array($theDate, $addedDates)) {
+                $groupedMovements[$m]['date'] = $theDate;
+                $groupedMovements[$m]['type'] = $move['type'];
+                $groupedMovements[$m]['quantity'] += $move['quantity'];
+                $groupedMovements[$m]['movement_amount'] += $move['movement_amount'];
+                array_push($addedDates, $theDate);
+            }
+        }
+
         return response()->json([
             'product' => [
                 'id' => $product->id,
@@ -160,6 +175,7 @@ class StockController extends Controller
                 'quantity' => $product->quantity,
             ],
             'movements' => $movements,
+            'groupedMovements' => $groupedMovements,
             'candlestick' => $wagmiSeries,
             'inbound' => $inboundSeries,
             'outbound' => $outboundSeries,

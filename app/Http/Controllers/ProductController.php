@@ -11,6 +11,7 @@ use App\Models\ProductCategory;
 use App\Models\ProductImage;
 use App\Models\ProductIngredient;
 use App\Models\ProductPrice;
+use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Models\StockMovementProduct;
 use Illuminate\Http\Request;
@@ -84,7 +85,7 @@ class ProductController extends Controller
         $message = Session::get('message');
         
         $product = Product::where('id', $id)
-        ->with(['images', 'prices', 'addons.addon', 'ingredients', 'categories'])
+        ->with(['images', 'variants.ingredients', 'addons.addon', 'categories'])
         ->first();
 
         $categories = Category::whereNotIn('id', $product->categories->pluck('id'))->orderBy('name', 'ASC')->get();
@@ -215,11 +216,41 @@ class ProductController extends Controller
             'message' => $message,
         ]);
     }
+    public function storeVariant(Request $request, $id) {
+        $variant = ProductVariant::create([
+            'product_id' => $id,
+            'label' => $request->label,
+            'price' => $request->price,
+        ]);
+
+        return redirect()->route('product.detail', $id)->with([
+            'message' => "Berhasil menambahkan varian",
+        ]);
+    }
+    public function updateVariant(Request $request, $id, $variantID) {
+        $data = ProductVariant::where('id', $variantID);
+        $data->update([
+            'label' => $request->label,
+            'price' => $request->price,
+        ]);
+
+        return redirect()->route('product.detail', $id)->with([
+            'message' => "Berhasil mengubah varian",
+        ]);
+    }
+    public function deleteVariant(Request $request, $id, $variantID) {
+        $data = ProductVariant::where('id', $variantID);
+        $data->delete();
+
+        return redirect()->route('product.detail', $id)->with([
+            'message' => "Berhasil menghapus varian",
+        ]);
+    }
     public function storeIngredient($id, Request $request) {
         $ingredientIDs = json_decode($request->ingredient_id);
         foreach ($ingredientIDs as $ingredientID) {
             $ingredient = ProductIngredient::create([
-                'product_id' => $id,
+                'variant_id' => $request->variant_id,
                 'ingredient_id' => $ingredientID,
                 'quantity' => $request->quantity,
             ]);

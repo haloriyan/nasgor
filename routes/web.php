@@ -82,6 +82,13 @@ Route::group(['middleware' => "User"], function () {
                 Route::post('store', [ProductController::class, 'storeIngredient'])->name('product.detail.ingredient.store');
                 Route::get('{ingredientID}/delete', [ProductController::class, 'deleteIngredient'])->name('product.detail.ingredient.delete');
             });
+            Route::group(['prefix' => "variant"], function () {
+                Route::post('store', [ProductController::class, 'storeVariant'])->name('product.detail.variant.store');
+                Route::group(['prefix' => "{variantID}"], function () {
+                    Route::post('update', [ProductController::class, 'updateVariant'])->name('product.detail.variant.update');
+                    Route::get('delete', [ProductController::class, 'deleteVariant'])->name('product.detail.variant.delete');
+                });
+            });
             Route::group(['prefix' => "addon"], function () {
                 Route::get('{addOnID}', [ProductController::class, 'removeAddOn'])->name('product.removeAddOn');
                 Route::post('store', [ProductController::class, 'storeAddOn'])->name('product.detail.addon.store');

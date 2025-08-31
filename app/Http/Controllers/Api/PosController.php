@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\ProductPrice;
+use App\Models\ProductVariant;
 use App\Models\Sales;
 use App\Models\SalesItem;
 use App\Models\SalesItemAddon;
@@ -23,7 +24,7 @@ class PosController extends Controller
         $categories = Category::where('pos_visibility', true)
         ->with(['products' => function ($query) use ($branch) {
             $query->where('branch_id', $branch->id);
-        }, 'products.images', 'products.prices', 'products.addons.addon'])
+        }, 'products.images', 'products.variants', 'products.addons.addon'])
         ->orderBy('priority', 'DESC')
         ->orderBy('updated_at', 'DESC')->get();
         
@@ -63,10 +64,12 @@ class PosController extends Controller
         $totalMargin = 0;
 
         foreach ($items as $item) {
-            $price = ProductPrice::where([
+            $variant = ProductVariant::where([
                 ['product_id', $item->id],
-                ['value', $item->price]
-            ])->first();
+                ['price', $item->price]
+            ])
+            ->with(['ingredients.ingredient'])
+            ->first();
             $product = Product::where('id', $item->id)->first();
             $margin = $item->price - $product->price;
             $theTotalMargin = $margin * $item->quantity;
@@ -74,7 +77,7 @@ class PosController extends Controller
             $salesItem = SalesItem::create([
                 'sales_id' => $sales->id,
                 'product_id' => $item->id,
-                'price_id' => $price->id,
+                'variant_id' => $variant->id,
                 'price' => $item->price,
                 'quantity' => $item->quantity,
                 'total_price' => $item->price * $item->quantity,
@@ -107,7 +110,7 @@ class PosController extends Controller
         $salesController->proceed($sales->id, $me);
 
         $sales = Sales::where('id', $sales->id)
-        ->with(['items', 'items.product.images', 'items.addons.addon', 'customer', 'review', 'branch', 'user'])
+        ->with(['items', 'items.variant', 'items.product.images', 'items.addons.addon', 'customer', 'review', 'branch', 'user'])
         ->first();
 
         return response()->json([

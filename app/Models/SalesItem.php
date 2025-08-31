@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class SalesItem extends Model
 {
     protected $fillable = [
-        'sales_id', 'product_id', 'price_id',
+        'sales_id', 'product_id', 'price_id', 'variant_id',
         'price', 'quantity', 'total_price', 'additional_price', 'grand_total',
         'notes', 'margin', 'total_margin'
     ];
@@ -17,6 +17,9 @@ class SalesItem extends Model
     }
     public function price_data() {
         return $this->belongsTo(ProductPrice::class, 'price_id');
+    }
+    public function variant() {
+        return $this->belongsTo(ProductVariant::class, 'variant_id');
     }
     public function addons() {
         return $this->hasMany(SalesItemAddon::class, 'item_id');

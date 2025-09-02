@@ -98,6 +98,7 @@
             </div>
             
             <div class="p-8 flex flex-col gap-4">
+
                 <div class="group border focus-within:border-primary rounded-lg p-2 relative">
                     <label class="text-slate-500 group-focus-within:text-primary text-xs absolute top-2 left-2">Nama</label>
                     <input type="text" name="name" id="name" class="w-full h-10 mt-2 outline-none bg-transparent text-sm text-slate-700" value="{{ $product->name }}" required />

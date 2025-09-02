@@ -71,13 +71,26 @@ class UserController extends Controller
         }
     }
 
-    public function generateDateRangeIndexes($rangeType) {
-        $format = 'Y-m-d';
+    public function generateDateRangeIndexes($rangeType, $startDate = null, $endDate = null) {
+        $format = 'Y-m-d H:i:s';
         $now = Carbon::now();
         $start = null;
         $end = $now->copy();
 
         switch ($rangeType) {
+            case 'custom':
+                if (!$startDate || !$endDate) {
+                    return "Custom range requires startDate and endDate";
+                }
+                $start = Carbon::parse($startDate)->startOfDay();
+                $end   = Carbon::parse($endDate)->endOfDay();
+                $period = CarbonPeriod::create($start, '1 day', $end);
+
+                return collect($period)->map(fn($date) => [
+                    'start' => $date->copy()->startOfDay()->format('Y-m-d H:i:s'),
+                    'end'   => $date->copy()->endOfDay()->format('Y-m-d H:i:s'),
+                ])->all();
+
             case 'today' :
                 $start = $now->copy()->startOfDay();
                 $end   = $now->copy()->endOfDay();

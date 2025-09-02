@@ -115,7 +115,9 @@ class ReportController extends Controller
         $myBranches = collect($myBranches);
 
         $userController = new UserController();
-        $ranges = $this->userController->generateDateRangeIndexes($request->date_range ?? 'today');
+        $startDate = $request->start_date ?? Carbon::now()->subDays(7)->startOfDay()->format('Y-m-d');
+        $endDate = $request->end_date ?? Carbon::now()->endOfDay()->format('Y-m-d');
+        $ranges = $this->userController->generateDateRangeIndexes($request->date_range ?? 'today', $startDate, $endDate);
         $rawSales = [];
 
         foreach ($myBranches as $branch) {
@@ -277,6 +279,8 @@ class ReportController extends Controller
             'request' => $request,
             'omset' => $omset,
             'volume' => $volume,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
             'omset_chart' => $omsetChart,
             'volume_chart' => $volumeChart,
             'myBranches' => $myBranches,
@@ -438,6 +442,9 @@ class ReportController extends Controller
         }
 
         $query = new Product();
+        $query = $query->whereHas('categories', function ($q) { 
+            $q->where('requestable', true);
+        });
         if ($request->q != "") {
             $query = $query->where('name', 'LIKE', '%'.$request->q.'%');
         }
@@ -669,6 +676,30 @@ class ReportController extends Controller
                 ]
             ]
         ]);
+
+        // Grouping by date
+        $grouped = [];
+        $dateAdded = [];
+        $dateFormat = "Y-m-d";
+
+        foreach ($movements as $movement) {
+            $theDate = Carbon::parse($movement['date'])->format($dateFormat);
+            $index = collect($grouped)->search(function ($item) use ($movement, $dateFormat) {
+                return $item['type'] === $movement['type']
+                    && Carbon::parse($movement['date'])->format($dateFormat) === Carbon::parse($item['date'])->format($dateFormat);
+            });
+            $index = $index === false ? -1 : $index;
+
+            if ($index >= 0) {
+                $grouped[$index]['quantity'] += $movement['quantity'];
+                $grouped[$index]['movement_amount'] += $movement['movement_amount'];
+            } else {
+                array_push($grouped, $movement);
+            }
+
+            array_push($dateAdded, $theDate);
+        }
+        $movements = $grouped;
         
         return view('user.report.movement_detail', [
             'product' => $product,

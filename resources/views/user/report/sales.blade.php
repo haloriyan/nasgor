@@ -10,11 +10,18 @@
     ];
 @endphp
 
+@section('head')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/airbnb.css">
+@endsection
+
 @section('content')
 <input type="hidden" id="OmsetChartOption" value="{{ json_encode($omset_chart) }}">
 <input type="hidden" id="VolumeChartOption" value="{{ json_encode($volume_chart) }}">
 <input type="hidden" id="PaymentSummaryChartOption" value="{{ json_encode($paymentSummaryChart) }}">
 <input type="hidden" id="OrderTypeChartOption" value="{{ json_encode($orderTypeChart) }}">
+<input type="hidden" id="startDate" value="{{ $startDate }}">
+<input type="hidden" id="endDate" value="{{ $endDate }}">
 
 <div class="p-8">
     <div class="flex items-center justify-end gap-4">
@@ -29,6 +36,14 @@
                 <option value="{{ $key }}" {{ $request->date_range == $key ? "selected='selected'" : "" }}>{{ $label }}</option>
             @endforeach
         </select>
+        @if ($request->date_range == "custom")
+            <div class="flex flex-col border rounded-lg p-1 w-3/12 bg-white mobile:w-full">
+                <div class="flex items-center">
+                    <input type="text" id="dateRangePicker" class="h-9 outline-0 text-xs text-slate-600 w-full">
+                    <ion-icon name="chevron-down-outline"></ion-icon>
+                </div>
+            </div>
+        @endif
     </div>
 
     <div class="grid grid-cols-2 mobile:grid-cols-1 gap-8 mt-8">
@@ -159,7 +174,11 @@
 
 @section('javascript')
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js" integrity="sha256-v0oiNSTkC3fDBL7GfhIiz1UfFIgM9Cxp3ARlWOEcB7E=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
 <script>
+    const startDate = select("#startDate").value;
+    const endDate = select("#endDate").value;
     const omsetChartOption = JSON.parse(select("#OmsetChartOption").value);
     const omsetChart = echarts.init(
         select("#OmsetChart")
@@ -181,5 +200,25 @@
     volumeChart.setOption(volumeChartOption);
     paymentSummaryChart.setOption(paymentSummaryChartOption);
     orderTypeChart.setOption(orderTypeChartOption);
+    
+
+    flatpickr("#dateRangePicker", {
+        mode: "range",
+        dateFormat: "Y-m-d",
+        defaultDate: [startDate, endDate],
+        locale: {
+            rangeSeparator: " ke ",
+        },
+        onChange: selectedDates => {
+            if (selectedDates.length === 2) {
+                const [start, end] = selectedDates;
+                
+                addFilter({
+                    start_date: dayjs(start).format('YYYY-MM-DD'),
+                    end_date: dayjs(end).format('YYYY-MM-DD'),
+                });
+            }
+        }
+    });
 </script>
 @endsection

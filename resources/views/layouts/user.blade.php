@@ -463,6 +463,8 @@
 
         // Build and redirect to the new full URL
         const newUrl = url.origin + url.pathname + '?' + params.toString();
+        // console.log(newUrl);
+        
         window.location.href = newUrl;
     };
 

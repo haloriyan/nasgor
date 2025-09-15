@@ -114,8 +114,8 @@ class UserController extends Controller
                 $period = CarbonPeriod::create($start, '1 day', $end);
 
                 return collect($period)->map(fn($date) => [
-                    'start' => $date->format($format),
-                    'end' => $date->format($format),
+                    'start' => $date->startOfDay()->format($format),
+                    'end' => $date->endOfDay()->format($format),
                 ])->all();
 
             case 'this_month':
@@ -213,6 +213,7 @@ class UserController extends Controller
         $myBranches = collect($myBranches);
 
         $ranges = $this->generateDateRangeIndexes($request->date_range ?? 'today');
+        Log::info($ranges);
 
         foreach ($myBranches as $branch) {
             $theOmsetSeries = [

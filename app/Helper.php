@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 
 function getBranchesAndPolicies($user) {
     $user = User::where('id', $user->id)->with(['accesses.branch', 'accesses.role'])->first();

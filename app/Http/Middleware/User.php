@@ -27,6 +27,11 @@ class User
         
         $route = Route::currentRouteName();
         $routes = explode(".", $route);
+        $isStaging = array_search('staging', $routes);
+        if ($isStaging !== false) {
+            array_splice($routes, $isStaging, 1);
+        }
+
         $exclusion = [
             'dashboard'
         ];

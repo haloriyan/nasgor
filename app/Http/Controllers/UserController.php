@@ -188,6 +188,10 @@ class UserController extends Controller
                 return "Unknown range type: $rangeType";
         }
     }
+    public function logout() {
+        Auth::logout();
+        return redirect()->route('login');
+    }
     public function dashboard(Request $request, $branchID = null) {
         $me = me();
         $myBranchIDs = [];
@@ -213,7 +217,6 @@ class UserController extends Controller
         $myBranches = collect($myBranches);
 
         $ranges = $this->generateDateRangeIndexes($request->date_range ?? 'today');
-        Log::info($ranges);
 
         foreach ($myBranches as $branch) {
             $theOmsetSeries = [
